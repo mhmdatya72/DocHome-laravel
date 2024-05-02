@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property mixed $role
+ * @method static where(string $string, mixed $id)
+ * @method static create(array|string[] $array_merge)
  */
 class User extends Authenticatable implements JWTSubject
 {

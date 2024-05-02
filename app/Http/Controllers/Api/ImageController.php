@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ImageController extends Controller
 {
-    public function upload_image(Request $request)
+    public function upload_image(Request $request): \Illuminate\Http\JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'image' => 'required|mimes:jpeg,gif,png|max:2048',
@@ -37,7 +37,7 @@ class ImageController extends Controller
         ], 201);
     }
 
-    public function add_user_image(Request $request)
+    public function add_user_image(Request $request): \Illuminate\Http\JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'image' => 'required|mimes:jpeg,gif,png|max:2048',
@@ -69,7 +69,7 @@ class ImageController extends Controller
         ], 201);
     }
 
-    public function delete_image(Request $request)
+    public function delete_image(Request $request): \Illuminate\Http\JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'path' => 'required',

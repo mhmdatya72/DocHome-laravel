@@ -52,8 +52,8 @@ class ServiceController extends Controller
             // Creating a new service
             $service = Service::create($validatedData);
 
-            // Returning a success response
-            return response()->json(['message' => 'Service created successfully'], 201);
+            // Returning a success response along with created service data
+            return response()->json(['message' => 'Service created successfully', 'data' => $service], 201);
 
         } catch (ValidationException $e) {
             // Returning a validation error response
@@ -63,6 +63,7 @@ class ServiceController extends Controller
             return response()->json(['message' => 'Failed to create service: ' . $e->getMessage()], 422);
         }
     }
+
 
     /**
      * Display the specified resource.
@@ -102,13 +103,15 @@ class ServiceController extends Controller
                 'price' => $validatedData['price'],
             ]);
 
-            // Return a JSON response indicating success
-            return response()->json(['message' => 'Service updated successfully']);
+            // Return a JSON response indicating success along with updated service data
+            return response()->json(['message' => 'Service updated successfully', 'data' => $service]);
+
         } catch (ValidationException $e) {
             // If validation fails, return a JSON response with error messages
             return response()->json(['errors' => $e->errors()], 422);
         }
     }
+
 
     /**
      * Remove the specified resource from storage.

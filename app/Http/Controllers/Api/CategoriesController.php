@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+use App\Models\Caregiver;
 use App\Models\Category;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -165,6 +166,57 @@ class CategoriesController extends Controller
         } catch (\Exception $e) {
             // Return an error response if category not found
             return response()->json(['error' => 'Category not found.'], 404);
+        }
+    }
+
+    /**
+     * Retrieve caregivers based on category ID.
+     *
+     * @param int $category_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+//    public function category_Caregivers(int $category_id): JsonResponse
+//    {
+//        try {
+//            // Find Caregivers by category_id
+//            $Caregivers = Caregiver::where('category_id', $category_id)->get();
+//
+//            // Check if Caregivers are found
+//            if ($Caregivers->isEmpty()) {
+//                // Return a 404 response if no Caregivers are found for this category
+//                return response()->json(['error' => 'Caregivers not found for this category.'], 404);
+//            }
+//
+//            // Return Caregivers if found
+//            return response()->json($Caregivers);
+//        } catch (\Exception $e) {
+//            // Return a 500 response if an unexpected error occurs
+//            return response()->json(['error' => 'An error occurred.'], 500);
+//        }
+//    }
+    public function category_Caregivers(int $category_id): JsonResponse
+    {
+        try {
+            // Get the logged-in user's center_id
+            $user = Auth::user(); // Assuming you're using Laravel's authentication
+            $center_id = $user->center_id;
+
+            // Find Caregivers by category_id and center_id
+            $Caregivers = Caregiver::where('category_id', $category_id)
+                ->where('center_id', $center_id)
+                ->get();
+
+            // Check if Caregivers are found
+            if ($Caregivers->isEmpty()) {
+                // Return a 404 response if no Caregivers are found for this category and center
+                return response()->json(['error' => 'Caregivers not found for this category and center.'], 404);
+            }
+
+            // Return Caregivers if found
+            return response()->json($Caregivers);
+        } catch (\Exception $e) {
+            // Return a 500 response if an unexpected error occurs
+            return response()->json(['error' => 'An error occurred.'], 500);
         }
     }
 

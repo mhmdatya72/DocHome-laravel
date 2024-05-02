@@ -10,6 +10,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @method static where(string $string, $caregiverId)
+ */
 class Caregiver extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;

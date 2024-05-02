@@ -44,7 +44,7 @@ class ChatController extends Controller
         ]);
     }
     // store a new chat
-    public function store(StoreChatRequest $request)
+    public function store(StoreChatRequest $request): \Illuminate\Foundation\Application|\Illuminate\Http\Response|JsonResponse|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
     {
         $data = $this->prepareStoreData($request);
 

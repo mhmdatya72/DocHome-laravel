@@ -16,7 +16,7 @@ class MessagesController extends Controller
 {
     // get chat message
 
-    public function index(GetMessageRequest $request)
+    public function index(GetMessageRequest $request): JsonResponse
     {
         $data = $request->validated();
         $chatId = $data['chat_id'];
@@ -39,7 +39,7 @@ class MessagesController extends Controller
         ]);
     }
     // create a chat message
-    public function store(StoreMessageRequest $request)
+    public function store(StoreMessageRequest $request): JsonResponse
     {
         $data = $request->validated();
         $data['user_id'] = auth()->guard('api')->user()->id;

@@ -137,22 +137,6 @@ class CaregiverController extends Controller
             'caregiver' => auth()->guard('caregiver')->user()
         ]);
     }
-    public function category_Caregivers($category_id): JsonResponse
-    {
-        try {
-            // Find Caregivers by category_id
-            $Caregivers = Caregiver::where('category_id', $category_id)->get();
 
-            // Check if Caregivers are found
-            if ($Caregivers->isEmpty()) {
-                return response()->json(['error' => 'Caregivers not found for this category.'], 404);
-            }
-
-            return response()->json($Caregivers);
-        } catch (\Exception $e) {
-            // Return an error response if an unexpected error occurs
-            return response()->json(['error' => 'An error occurred.'], 500);
-        }
-    }
 
 }

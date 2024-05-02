@@ -10,6 +10,8 @@ use App\Models\Category;
 /**
  * @method static whereIn(string $string, array $serviceIds)
  * @method static findOrFail($id)
+ * @method static create(array $validatedData)
+ * @method static where(string $string, $category_id)
  */
 class Service extends Model
 {
