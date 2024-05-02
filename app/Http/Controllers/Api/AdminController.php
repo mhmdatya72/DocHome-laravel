@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
+use App\Models\Caregiver;
+use App\Models\Image;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -15,7 +17,8 @@ class AdminController extends Controller
 {
 
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->middleware('auth:admin', ['except' => ['login', 'register']]);
     }
     /**
@@ -27,7 +30,7 @@ class AdminController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
-    	$validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string|min:6',
         ]);
@@ -52,16 +55,35 @@ class AdminController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
-            'email' => 'required|string|email|max:100|unique:users',
+            'email' => 'required|string|email|max:100|unique:admins',
+            'profile_image' => 'required|mimes:jpeg,gif,png|max:2048',
             'password' => 'required|string|confirmed|min:6',
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
         }
+
+        // upload image in public disk
+        if ($file = $request->file('profile_image')) {
+            $name = $file->getClientOriginalName();
+            $profile_image_path = $file->storeAs('images/admins/' . "$request->name" . '/profile_image', $name, 'public');
+
+            // insert image in image table
+            $data = new Image();
+            $data->name = $name;
+            $data->path = $profile_image_path;
+            $data->save();
+        }
+
         $admin = Admin::create(array_merge(
-                    $validator->validated(),
-                    ['password' => bcrypt($request->password)]
-                ));
+            $validator->validated(),
+            ['password' => bcrypt($request->password)],
+            ['profile_image' => $profile_image_path]
+        ));
+
+
+
+
         return response()->json([
             'message' => 'Admin successfully registered',
             'admin' => $admin
@@ -73,7 +95,8 @@ class AdminController extends Controller
      *
      * @return JsonResponse
      */
-    public function logout() {
+    public function logout()
+    {
         auth()->guard('admin')->logout();
         return response()->json(['message' => 'Admin successfully signed out']);
     }
@@ -82,7 +105,8 @@ class AdminController extends Controller
      *
      * @return JsonResponse
      */
-    public function refresh() {
+    public function refresh()
+    {
         return $this->createNewToken(auth()->guard('admin')->refresh());
     }
     /**
@@ -90,7 +114,8 @@ class AdminController extends Controller
      *
      * @return JsonResponse
      */
-    public function userProfile() {
+    public function userProfile()
+    {
         return response()->json(auth()->guard('admin')->user());
     }
     /**
@@ -100,7 +125,8 @@ class AdminController extends Controller
      *
      * @return JsonResponse
      */
-    protected function createNewToken($token){
+    protected function createNewToken($token)
+    {
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
@@ -108,5 +134,4 @@ class AdminController extends Controller
             'admin' => auth()->guard('admin')->user()
         ]);
     }
-
 }

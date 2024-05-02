@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\Traits\ResponseTrait;
 use App\Http\Controllers\Controller;
 use App\Models\Center;
+use App\Models\Image;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,12 +16,13 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class UserController extends Controller
 {
-   /**
+    /**
      * Create a new AuthController instance.
      *
      * @return void
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->middleware('auth:api', ['except' => ['login', 'register']]);
     }
     /**
@@ -28,15 +30,16 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request){
-    	$validator = Validator::make($request->all(), [
+    public function login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string|min:6',
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-        if (! $token = auth()->guard('api')->attempt($validator->validated())) {
+        if (!$token = auth()->guard('api')->attempt($validator->validated())) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -47,22 +50,37 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function register(Request $request) {
+    public function register(Request $request)
+    {
         $centerModel = get_class(new Center());
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|confirmed|min:6',
+            'profile_image' => 'required|mimes:jpeg,gif,png|max:2048',
             'phone' => 'required|min:11|max:11',
             'center_id' => "required|exists:{$centerModel},id",
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 422);
         }
+
+        // upload image in public disk
+        if ($file = $request->file('profile_image')) {
+            $name = $file->getClientOriginalName();
+            $profile_image_path = $file->storeAs('images/users/' . "$request->name" . '/profile_image', $name, 'public');
+
+            // insert image in image table
+            $data = new Image();
+            $data->name = $name;
+            $data->path = $profile_image_path;
+            $data->save();
+        }
         $user = User::create(array_merge(
-                    $validator->validated(),
-                    ['password' => bcrypt($request->password)]
-                ));
+            $validator->validated(),
+            ['password' => bcrypt($request->password)],
+            ['profile_image' => $profile_image_path]
+        ));
         return response()->json([
             'message' => 'User successfully registered',
             'user' => $user
@@ -74,7 +92,8 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function logout() {
+    public function logout()
+    {
         auth()->guard('api')->logout();
         return response()->json(['message' => 'User successfully signed out']);
     }
@@ -83,7 +102,8 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function refresh() {
+    public function refresh()
+    {
         return $this->createNewToken(auth()->guard('api')->refresh());
     }
     /**
@@ -91,7 +111,8 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function userProfile() {
+    public function userProfile()
+    {
         return response()->json(auth()->guard('api')->user());
     }
     /**
@@ -101,7 +122,8 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function createNewToken($token){
+    protected function createNewToken($token)
+    {
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
@@ -124,5 +146,4 @@ class UserController extends Controller
             'message' => "all users except me"
         ]);
     }
-
 }

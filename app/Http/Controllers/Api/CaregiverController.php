@@ -17,7 +17,8 @@ class CaregiverController extends Controller
 
 
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->middleware('auth:caregiver', ['except' => ['login', 'register']]);
     }
 
@@ -59,7 +60,9 @@ class CaregiverController extends Controller
             'email' => 'required|string|email|max:100|unique:caregivers',
             'password' => 'required|string|confirmed|min:6',
             'phone' => 'required|min:11|max:11',
-            'image' => 'required|mimes:jpeg,gif,png|max:2048',
+            'profile_image' => 'required|mimes:jpeg,gif,png|max:2048',
+            'professional_card_image' => 'required|mimes:jpeg,gif,png|max:2048',
+            'id_card_image' => 'required|mimes:jpeg,gif,png|max:2048',
             'center_id' => "required|exists:{$centerModel},id",
             'category_id' => "required|exists:{$categoryModel},id",
         ]);
@@ -68,14 +71,34 @@ class CaregiverController extends Controller
         }
 
         // upload image in public disk
-        if ($file = $request->file('image')) {
+        if ($file = $request->file('profile_image')) {
             $name = $file->getClientOriginalName();
-            $path = $file->storeAs('images/caregivers', $name, 'public');
+            $profile_image_path = $file->storeAs('images/caregivers/' . "$request->name" . '/profile_image', $name, 'public');
 
             // insert image in image table
             $data = new Image();
             $data->name = $name;
-            $data->path = $path;
+            $data->path = $profile_image_path;
+            $data->save();
+        }
+        if ($file = $request->file('professional_card_image')) {
+            $name = $file->getClientOriginalName();
+            $professional_card_image_path = $file->storeAs('images/caregivers/' . "$request->name" . '/professional_card_image', $name, 'public');
+
+            // insert image in image table
+            $data = new Image();
+            $data->name = $name;
+            $data->path = $professional_card_image_path;
+            $data->save();
+        }
+        if ($file = $request->file('id_card_image')) {
+            $name = $file->getClientOriginalName();
+            $id_card_image_path = $file->storeAs('images/caregivers/' . "$request->name" . '/id_card_image', $name, 'public');
+
+            // insert image in image table
+            $data = new Image();
+            $data->name = $name;
+            $data->path = $id_card_image_path;
             $data->save();
         }
 
@@ -83,7 +106,9 @@ class CaregiverController extends Controller
         $caregiver = Caregiver::create(array_merge(
             $validator->validated(),
             ['password' => bcrypt($request->password)],
-            ['image' => $path],
+            ['profile_image' => $profile_image_path],
+            ['professional_card_image' => $professional_card_image_path],
+            ['id_card_image' => $id_card_image_path],
         ));
 
 
@@ -154,5 +179,4 @@ class CaregiverController extends Controller
             return response()->json(['error' => 'An error occurred.'], 500);
         }
     }
-
 }

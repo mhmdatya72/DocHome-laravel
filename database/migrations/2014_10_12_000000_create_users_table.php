@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('phone');
-            $table->string('image')->nullable();
+            $table->string('profile_image')->nullable();
             $table->unsignedBigInteger('center_id');
             $table->foreign('center_id')->references('id')->on('centers');
             $table->timestamp('email_verified_at')->nullable();
