@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ReportsController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Api\RatingController;
 use App\Models\Center;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -106,6 +107,15 @@ Route::group(['middleware' => 'caregiver.auth'], function () {
     Route::put('update_report/{id}', [ReportsController::class, 'update']);
     Route::delete('delete_report/{id}', [ReportsController::class, 'destroy']);
 });
+
+
+// rating routes
+
+
+Route::post('/ratings', [RatingController::class, 'store']);
+Route::get('/caregiver/{caregiver_id}/ratings', [RatingController::class, 'index']);
+Route::get('/caregiver/{caregiver_id}/average-rating', [RatingController::class, 'averageRating']);
+
 
 //? Testing section
 Route::get("/users", function () {

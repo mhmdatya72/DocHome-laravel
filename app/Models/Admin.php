@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+
 /**
  * @method static create(array|string[] $array_merge)
  */
@@ -86,4 +87,5 @@ class Admin extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Booking::class);
     }
+
 }

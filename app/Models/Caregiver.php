@@ -9,6 +9,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Rating;
 
 class Caregiver extends Authenticatable implements JWTSubject
 {
@@ -102,4 +103,10 @@ class Caregiver extends Authenticatable implements JWTSubject
         return $this->belongsTo(Center::class);
     }
 
+    public function rating(): HasMany
+    {
+        return $this->hasMany(rating::class);
+    }
 }
+
+
