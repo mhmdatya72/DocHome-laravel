@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\CargiverAuthMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -75,6 +76,7 @@ class Kernel extends HttpKernel
         'assign.guard' => \App\Http\Middleware\AssignGuard::class,
         // في مصفوفة $routeMiddleware
         'admin.auth' => \App\Http\Middleware\AdminAuthMiddleware::class,
+        'caregiver.auth' => \App\Http\Middleware\CargiverAuthMiddleware::class,
 
     ];
 }

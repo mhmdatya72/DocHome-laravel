@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Caregiver;
 use App\Models\Category;
+use App\Models\Center;
 use App\Models\Image;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class CaregiverController extends Controller
 
 
     public function __construct() {
-        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+        $this->middleware('auth:caregiver', ['except' => ['login', 'register']]);
     }
 
     /**
@@ -51,14 +52,16 @@ class CaregiverController extends Controller
      */
     public function register(Request $request)
     {
+        $centerModel = get_class(new Center());
+        $categoryModel = get_class(new Category());
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:caregivers',
             'password' => 'required|string|confirmed|min:6',
             'phone' => 'required|min:11|max:11',
             'image' => 'required|mimes:jpeg,gif,png|max:2048',
-            'center_id' => 'required',
-            'category_id' => 'required',
+            'center_id' => "required|exists:{$centerModel},id",
+            'category_id' => "required|exists:{$categoryModel},id",
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);

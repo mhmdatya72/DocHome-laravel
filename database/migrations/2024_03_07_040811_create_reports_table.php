@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('content');
-            $table->foreignId('user_id')->references('id')->on('users')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->date('date');
+            $table->string('user_name');
             $table->foreignId('caregiver_id')->references('id')->on('caregivers')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
         });

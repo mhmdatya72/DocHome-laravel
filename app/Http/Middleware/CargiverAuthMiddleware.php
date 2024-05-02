@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class CargiverAuthMiddleware
@@ -13,8 +14,12 @@ class CargiverAuthMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
+        if (!Auth::guard('caregiver')->check()) {
+            // إذا لم يكن المستخدم مسجل كمقدم رعاية يمكنك توجيهه إلى رسالة تنبيه
+            return response()->json(['error' => 'You are not registered as an caregiver'], 401);
+        }
         return $next($request);
     }
 }

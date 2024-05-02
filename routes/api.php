@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\MessagesController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\ReportsController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Models\Center;
 use App\Models\User;
@@ -46,24 +47,23 @@ Route::get('categories/{category_id}/Caregivers', [CaregiverController::class, '
 
 Route::middleware('admin.auth')->group(function () {
     Route::get('categories/{id}', [CategoriesController::class, 'show']);
-Route::post('categories', [CategoriesController::class, 'store']);
-Route::post('categories/{id}', [CategoriesController::class, 'update']);
-Route::delete('categories/{id}', [CategoriesController::class, 'destroy']);
+    Route::post('categories', [CategoriesController::class, 'store']);
+    Route::post('categories/{id}', [CategoriesController::class, 'update']);
+    Route::delete('categories/{id}', [CategoriesController::class, 'destroy']);
 
-// Services routes
-Route::get('services', [ServiceController::class, 'index']);
-Route::post('services', [ServiceController::class, 'store']);
-Route::get('services/{id}', [ServiceController::class, 'show']);
-Route::post('services/{id}', [ServiceController::class, 'update']);
-Route::delete('services/{id}', [ServiceController::class, 'destroy']);
+    // Services routes
+    Route::get('services', [ServiceController::class, 'index']);
+    Route::post('services', [ServiceController::class, 'store']);
+    Route::get('services/{id}', [ServiceController::class, 'show']);
+    Route::post('services/{id}', [ServiceController::class, 'update']);
+    Route::delete('services/{id}', [ServiceController::class, 'destroy']);
 
-// Centers routes
-Route::get('centers', [CenterController::class, 'index']);
-Route::get('centers/{id}', [CenterController::class, 'show']);
-Route::post('centers', [CenterController::class, 'store']);
-Route::post('centers/{id}', [CenterController::class, 'update']);
-Route::delete('centers/{id}', [CenterController::class, 'destroy']);
-
+    // Centers routes
+    Route::get('centers', [CenterController::class, 'index']);
+    Route::get('centers/{id}', [CenterController::class, 'show']);
+    Route::post('centers', [CenterController::class, 'store']);
+    Route::post('centers/{id}', [CenterController::class, 'update']);
+    Route::delete('centers/{id}', [CenterController::class, 'destroy']);
 });
 
 // Images routes
@@ -93,10 +93,22 @@ Route::apiResource('user', UserController::class)->only(['index']);
 Route::post('send-notification', [NotificationController::class, 'sendNotification']);
 
 
+//======================== reports api ===================================
 
+// caregiver , admin and user roles
+
+Route::get('get_all_reports', [ReportsController::class, 'index']);
+Route::get('get_one_report/{id}', [ReportsController::class, 'show']);
+
+// caregiver roles
+Route::group(['middleware' => 'caregiver.auth'], function () {
+    Route::post('store_report', [ReportsController::class, 'store']);
+    Route::put('update_report/{id}', [ReportsController::class, 'update']);
+    Route::delete('delete_report/{id}', [ReportsController::class, 'destroy']);
+});
 
 //? Testing section
-Route::get("/users",function(){
+Route::get("/users", function () {
     $users = User::get();
     return $users;
 });

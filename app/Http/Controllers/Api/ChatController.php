@@ -88,6 +88,7 @@ class ChatController extends Controller
         $caregiverId = (int)$data['caregiver_id'];
         unset($data['caregiver_id']);
         $data['created_by'] = auth()->guard('api')->user()->id;
+        $data['name'] = auth()->guard('api')->user()->name;
         return [
             'caregiverId' => $caregiverId,
             'userId' => auth()->guard('api')->user()->id,

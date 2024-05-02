@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\Traits\ResponseTrait;
 use App\Http\Controllers\Controller;
+use App\Models\Center;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -47,12 +48,13 @@ class UserController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function register(Request $request) {
+        $centerModel = get_class(new Center());
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|confirmed|min:6',
             'phone' => 'required|min:11|max:11',
-            'center_id' => 'required',
+            'center_id' => "required|exists:{$centerModel},id",
         ]);
         if($validator->fails()){
             return response()->json($validator->errors()->toJson(), 422);

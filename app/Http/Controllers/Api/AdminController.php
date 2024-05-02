@@ -16,7 +16,7 @@ class AdminController extends Controller
 
 
     public function __construct() {
-        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+        $this->middleware('auth:admin', ['except' => ['login', 'register']]);
     }
     /**
      * Get a JWT via given credentials.
