@@ -25,7 +25,6 @@ class ResetPasswordController extends Controller
             $otp = rand(1000, 9999);
             // check if email exists in users table or not
             $mailExist = User::firstWhere('email', $email);
-            $message = [];
             if ($mailExist) {
                 // send otp to this email
                 Mail::to($email)->send(new WelcomeMail("Please use this otp for continue reset your password", "OTP: $otp"));
@@ -33,17 +32,19 @@ class ResetPasswordController extends Controller
                 PasswordResets::where('email', $email)->delete();
                 // add new record
                 PasswordResets::create(['email' => $email, 'otp' => $otp]);
-                $message = [
+                return response()->json([
                     'success' => "we send the otp to your email $email",
-                ];
+                ]);
             } else {
-                $message = [
-                    'failure' => "mail $email not exist in or system",
-                ];
+                return response()->json([
+                    'message' => "mail $email not exist in or system",
+                ], status: 404);
             }
-            return response()->json($message);
         } catch (Exception $e) {
             return response()->json(
+                [
+                    "message" => $e->getMessage()
+                ],
                 status: 500
             );
         }
@@ -62,12 +63,12 @@ class ResetPasswordController extends Controller
             // check if it's expired or not
             if ($passwordReset && Carbon::parse($passwordReset->created_at)->addHour() < now()) {
                 return response()->json([
-                    'failure' => "otp expired"
-                ]);
+                    'message' => "otp expired",
+                ],404);
             } else if ($passwordReset && $passwordReset->otp != $otp) {
                 return response()->json([
-                    'failure' => "otp not correct"
-                ]);
+                    'message' => "otp not correct",
+                ], 404);
             }
             return response()->json([
                 'success' => "otp is correct"
@@ -92,7 +93,7 @@ class ResetPasswordController extends Controller
             User::firstWhere('email', $email)->update(['password' => $newPassword]);
             return response()->json(
                 data: [
-                    "message" => "password updated successfully"
+                    "message" => "password updated successfully",
                 ]
             );
         } catch (Exception $e) {
