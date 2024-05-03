@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @method static where(string $string, int $is_private)
+ * @method static create(mixed $data)
+ */
 class Chat extends Model
 {
     use HasFactory;

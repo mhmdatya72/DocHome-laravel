@@ -11,7 +11,7 @@ class CenterController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): \Illuminate\Http\JsonResponse
     {
         try {
             // get all centers
@@ -26,7 +26,7 @@ class CenterController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
             // Validate request data
@@ -34,7 +34,7 @@ class CenterController extends Controller
                 'name' => 'required|max:255|unique:centers',
             ]);
 
-          
+
 
             // Create a new center
             $center = Center::create([
@@ -49,11 +49,11 @@ class CenterController extends Controller
         }
     }
 
-  
+
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show($id): \Illuminate\Http\JsonResponse
     {
         try {
             // Find center by ID
@@ -76,7 +76,7 @@ class CenterController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): \Illuminate\Http\JsonResponse
     {
         try {
             // Find center by ID
@@ -101,7 +101,7 @@ class CenterController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy($id): \Illuminate\Http\JsonResponse
     {
         try {
             // Find center by ID and delete it

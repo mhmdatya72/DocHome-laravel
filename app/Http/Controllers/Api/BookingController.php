@@ -161,9 +161,6 @@ class BookingController extends Controller
         }
     }
 
-
-
-
     /**
      * Display the details of a booking.
      * Shows bookings associated with the user who opened them or the caregiver associated with them.
@@ -243,25 +240,27 @@ class BookingController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Edit a booking.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function edit($id): JsonResponse
+    public function edit(int $id): JsonResponse
     {
         try {
             $booking = Booking::findOrFail($id);
 
-            // Ensure the current authenticated user is the owner of the booking
-            if (auth()->id() !== $booking->user_id) {
+            // Check if the authenticated user is authorized to edit this booking
+            if (auth()->check() && auth()->id() == $booking->user_id) {
+                return response()->json(['booking' => $booking], 200);
+            } else {
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
-
-            return response()->json(['booking' => $booking], 200);
-        } catch (ModelNotFoundException $e) {
-            return response()->json(['error' => 'Booking not found'], 404);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
 
     public function update(Request $request, $id): JsonResponse
     {
@@ -554,8 +553,6 @@ class BookingController extends Controller
             return response()->json(['error' => 'An error occurred while processing the request.'], 500);
         }
     }
-
-
 
         /**
      * Approve or reject a booking by the caregiver.

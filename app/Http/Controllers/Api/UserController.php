@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
 class UserController extends Controller
@@ -25,10 +26,11 @@ class UserController extends Controller
     {
         $this->middleware('auth:api', ['except' => ['login', 'register']]);
     }
+
     /**
      * Get a JWT via given credentials.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @throws ValidationException
      */
     public function login(Request $request)
     {
@@ -45,10 +47,11 @@ class UserController extends Controller
 
         return $this->createNewToken($token);
     }
+
     /**
      * Register a User.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @throws ValidationException
      */
     public function register(Request $request)
     {
@@ -90,7 +93,6 @@ class UserController extends Controller
     /**
      * Log the user out (Invalidate the token).
      *
-     * @return \Illuminate\Http\JsonResponse
      */
     public function logout()
     {
@@ -100,7 +102,6 @@ class UserController extends Controller
     /**
      * Refresh a token.
      *
-     * @return \Illuminate\Http\JsonResponse
      */
     public function refresh()
     {
@@ -109,7 +110,6 @@ class UserController extends Controller
     /**
      * Get the authenticated User.
      *
-     * @return \Illuminate\Http\JsonResponse
      */
     public function userProfile()
     {
@@ -118,7 +118,7 @@ class UserController extends Controller
     /**
      * Get the token array structure.
      *
-     * @param  string $token
+     * @param string $token
      *
      * @return \Illuminate\Http\JsonResponse
      */

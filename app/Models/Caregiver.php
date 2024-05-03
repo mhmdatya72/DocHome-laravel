@@ -11,6 +11,9 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Rating;
 
+/**
+ * @method static where(string $string, $caregiverId)
+ */
 class Caregiver extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;

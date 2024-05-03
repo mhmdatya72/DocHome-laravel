@@ -9,10 +9,10 @@ use App\Events\NotificationEvent;
 
 class NotificationController extends Controller
 {
-    public function sendNotification(Request $request)
+    public function sendNotification(Request $request): \Illuminate\Http\JsonResponse
     {
         $message = $request->input('message');
-        
+
         // Broadcast notification event
         event(new NotificationEvent($message));
 
