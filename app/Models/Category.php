@@ -12,7 +12,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Category extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'description','image'];
+    protected $fillable = [
+        'name_ar',
+        'name_en',
+        'description_ar',
+        'description_en',
+        'image'
+    ];
 
     public function services(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

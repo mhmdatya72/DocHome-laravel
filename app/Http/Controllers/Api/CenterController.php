@@ -24,21 +24,21 @@ class CenterController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Store a newly created resource in storage.
      */
     public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
             // Validate request data
             $validatedData = $request->validate([
-                'name' => 'required|max:255|unique:centers',
+                'name_ar' => 'required|max:255|unique:centers',
+                'name_en' => 'required|max:255|unique:centers',
             ]);
-
-
 
             // Create a new center
             $center = Center::create([
-                'name' => $validatedData['name'],
+                'name_ar' => $validatedData['name_ar'],
+                'name_en' => $validatedData['name_en'],
             ]);
 
             return response()->json($center, 201);
@@ -66,14 +66,6 @@ class CenterController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Center $center)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id): \Illuminate\Http\JsonResponse
@@ -84,11 +76,13 @@ class CenterController extends Controller
 
             // Validate request data
             $validatedData = $request->validate([
-                'name' => 'required|max:255|unique:centers',
+                'name_ar' => 'required|max:255|unique:centers,name_ar,' . $id,
+                'name_en' => 'required|max:255|unique:centers,name_en,' . $id,
             ]);
 
             // Update center details
-            $center->name = $validatedData['name'];
+            $center->name_ar = $validatedData['name_ar'];
+            $center->name_en = $validatedData['name_en'];
             $center->save();
 
             return response()->json($center, 200);
@@ -108,8 +102,7 @@ class CenterController extends Controller
             $center = Center::findOrFail($id);
             $center->delete();
 
-            return response()->json(['message' => 'center deleted.'], 201);
-
+            return response()->json(['message' => 'center deleted.'], 200);
 
         } catch (\Exception $e) {
             // Return an error response if center not found
@@ -117,3 +110,4 @@ class CenterController extends Controller
         }
     }
 }
+

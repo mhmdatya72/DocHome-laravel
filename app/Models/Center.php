@@ -12,7 +12,10 @@ use Illuminate\Database\Eloquent\Model;
 class Center extends Model
 {
     use HasFactory;
-    protected $fillable = ['name'];
+    protected $fillable = [
+        'name_ar',
+        'name_en'
+    ];
 
 
 }
