@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('centers', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name_arabic')->nullable(); // Arabic column for name
+            $table->string('name_english')->nullable(); // English column for name
             $table->timestamps();
         });
     }
