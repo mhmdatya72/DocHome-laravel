@@ -8,7 +8,7 @@ use App\Models\Rating;
 
 class RatingController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([
             'caregiver_id' => 'required|exists:caregivers,id',
@@ -27,13 +27,13 @@ class RatingController extends Controller
         return response()->json(['message' => 'Rating submitted successfully'], 201);
     }
 
-    public function index($caregiver_id)
+    public function index($caregiver_id): \Illuminate\Http\JsonResponse
     {
         $ratings = Rating::where('caregiver_id', $caregiver_id)->get();
         return response()->json($ratings);
     }
 
-    public function averageRating($caregiver_id)
+    public function averageRating($caregiver_id): \Illuminate\Http\JsonResponse
     {
         $averageRating = Rating::where('caregiver_id', $caregiver_id)->avg('rating');
         return response()->json(['average_rating' => $averageRating]);
