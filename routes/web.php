@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Models\Caregiver;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,3 +30,9 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+
+// Route::get("/test",function(){
+//     $status = Caregiver::firstWhere("email","ahm3delsafy@gmail.com")->status;
+//     return $status;
+// });

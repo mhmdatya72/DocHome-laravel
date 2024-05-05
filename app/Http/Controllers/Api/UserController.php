@@ -44,7 +44,6 @@ class UserController extends Controller
         if (!$token = auth()->guard('api')->attempt($validator->validated())) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-
         return $this->createNewToken($token);
     }
 
@@ -60,7 +59,7 @@ class UserController extends Controller
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|confirmed|min:6',
-            'profile_image' => 'required|mimes:jpeg,gif,png|max:2048',
+            // 'profile_image' => 'mimes:jpeg,gif,png|max:2048',
             'phone' => 'required|min:11|max:11',
             'center_id' => "required|exists:{$centerModel},id",
         ]);
@@ -69,20 +68,20 @@ class UserController extends Controller
         }
 
         // upload image in public disk
-        if ($file = $request->file('profile_image')) {
-            $name = $file->getClientOriginalName();
-            $profile_image_path = $file->storeAs('images/users/' . "$request->name" . '/profile_image', $name, 'public');
+        // if ($file = $request->file('profile_image')) {
+        //     $name = $file->getClientOriginalName();
+        //     $profile_image_path = $file->storeAs('images/users/' . "$request->name" . '/profile_image', $name, 'public');
 
-            // insert image in image table
-            $data = new Image();
-            $data->name = $name;
-            $data->path = $profile_image_path;
-            $data->save();
-        }
+        //     // insert image in image table
+        //     $data = new Image();
+        //     $data->name = $name;
+        //     $data->path = $profile_image_path;
+        //     $data->save();
+        // }
         $user = User::create(array_merge(
             $validator->validated(),
             ['password' => bcrypt($request->password)],
-            ['profile_image' => $profile_image_path]
+            // ['profile_image' => $profile_image_path]
         ));
         return response()->json([
             'message' => 'User successfully registered',

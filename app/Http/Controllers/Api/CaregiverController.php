@@ -14,9 +14,6 @@ use Illuminate\Validation\ValidationException;
 
 class CaregiverController extends Controller
 {
-
-
-
     public function __construct()
     {
         $this->middleware('auth:caregiver', ['except' => ['login', 'register']]);
@@ -37,6 +34,10 @@ class CaregiverController extends Controller
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
+        }
+        $status = Caregiver::firstWhere("email",$request->email)->status;
+        if($status == 0){
+            return response()->json(['error' => "Please wait until admin accept you"], 403);
         }
         if (!$token = auth()->guard('caregiver')->attempt($validator->validated())) {
             return response()->json(['error' => 'Unauthorized'], 401);
