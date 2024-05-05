@@ -93,7 +93,7 @@ class UserController extends Controller
      * Log the user out (Invalidate the token).
      *
      */
-    public function logout()
+    public function logout(): JsonResponse
     {
         auth()->guard('api')->logout();
         return response()->json(['message' => 'User successfully signed out']);
@@ -102,7 +102,7 @@ class UserController extends Controller
      * Refresh a token.
      *
      */
-    public function refresh()
+    public function refresh(): JsonResponse
     {
         return $this->createNewToken(auth()->guard('api')->refresh());
     }
@@ -110,7 +110,7 @@ class UserController extends Controller
      * Get the authenticated User.
      *
      */
-    public function userProfile()
+    public function userProfile(): JsonResponse
     {
         return response()->json(auth()->guard('api')->user());
     }

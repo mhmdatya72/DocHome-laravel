@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('services', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name_ar')->nullable(); // Column for Arabic name
+            $table->string('name_en')->nullable(); // Column for English name
             $table->decimal('price', 8, 2);
             $table->unsignedBigInteger('category_id');
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
             $table->timestamps();
         });
+
     }
 
     /**

@@ -16,7 +16,7 @@ use App\Models\Category;
 class Service extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'price', 'category_id'];
+    protected $fillable = ['name_ar', 'name_en', 'price', 'category_id'];
 
     public function category(): BelongsTo
     {
