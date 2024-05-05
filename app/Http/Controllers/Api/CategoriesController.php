@@ -63,7 +63,15 @@ class CategoriesController extends Controller
             if (!$image->isValid()) {
                 throw new \Exception('Invalid image file.');
             }
-            $imageName = $validatedData['name_en'] . '.' . $image->getClientOriginalExtension();
+
+            // Ensure it's an image file
+            $imageExtension = $image->getClientOriginalExtension();
+            if (!in_array($imageExtension, ['jpeg', 'png', 'jpg', 'gif'])) {
+                throw new \Exception('The uploaded file must be an image (JPEG, PNG, JPG, GIF).');
+            }
+
+            // Generate image name and store it
+            $imageName = $validatedData['name_en'] . '.' . $imageExtension;
             $imagePath = $image->storeAs('', $imageName, 'categories');
 
             // Create a new category
@@ -77,13 +85,22 @@ class CategoriesController extends Controller
 
             return response()->json($category, 201);
         } catch (ValidationException $e) {
-            // Return validation error response
-            return response()->json(['message' => 'Validation failed: ' . $e->getMessage()], 422);
+            // Get the validation errors
+            $errors = $e->validator->errors()->messages();
+
+            // Prepare a response indicating the required data
+            $requiredData = [];
+            foreach ($errors as $field => $errorMessages) {
+                $requiredData[$field] = $errorMessages[0]; // Assuming you want to return only the first error message
+            }
+
+            return response()->json(['message' => 'Validation failed', 'required_data' => $requiredData], 422);
         } catch (\Exception $e) {
             // Return error response if failed to create category
             return response()->json(['message' => 'Failed to create category: ' . $e->getMessage()], 422);
         }
     }
+
 
     /**
      * Update the specified resource in storage.

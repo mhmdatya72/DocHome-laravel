@@ -14,13 +14,23 @@ class ServiceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    /**
+     * Display a listing of the services.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index()
     {
         try {
-            $services = Service::with('category:id,name')->get();
-            return response()->json($services);
+            // Retrieve all services
+            $services = Service::all();
+
+            // Return success response with the retrieved services
+            return response()->json(['message' => 'Services retrieved successfully', 'data' => $services], 200);
+
         } catch (\Exception $e) {
-            return response()->json(['error' => 'An error occurred while fetching data.'], 500);
+            // Return error response if failed to retrieve services
+            return response()->json(['message' => 'Failed to retrieve services: ' . $e->getMessage()], 422);
         }
     }
 

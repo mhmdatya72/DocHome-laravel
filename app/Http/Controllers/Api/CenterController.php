@@ -43,11 +43,23 @@ class CenterController extends Controller
 
             return response()->json($center, 201);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Get the validation errors
+            $errors = $e->errors();
+
+            // Prepare a response indicating the required data
+            $requiredData = [];
+            foreach ($errors as $field => $errorMessages) {
+                $requiredData[$field] = $errorMessages[0]; // Assuming you want to return only the first error message
+            }
+
+            return response()->json(['message' => 'Validation failed', 'required_data' => $requiredData], 422);
         } catch (\Exception $e) {
             // Return an error response if creating centers fails
             return response()->json(['message' => 'Failed to create center: ' . $e->getMessage()], 422);
         }
     }
+
 
 
     /**
