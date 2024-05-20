@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
 use App\Models\Caregiver;
 use App\Models\Category;
 use App\Models\Center;
 use App\Models\Image;
+use App\Models\Rating;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -35,8 +37,8 @@ class CaregiverController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-        $status = Caregiver::firstWhere("email",$request->email)->status;
-        if($status == 0){
+        $status = Caregiver::firstWhere("email", $request->email)->status;
+        if ($status == 0) {
             return response()->json(['error' => "Please wait until admin accept you"], 403);
         }
         if (!$token = auth()->guard('caregiver')->attempt($validator->validated())) {
@@ -179,5 +181,17 @@ class CaregiverController extends Controller
             // Return an error response if an unexpected error occurs
             return response()->json(['error' => 'An error occurred.'], 500);
         }
+    }
+    public function statistics()
+    {
+        $caregiver_numbers = Caregiver::count();
+        $booking_numbers = Booking::count();
+        $rating_numbers = Rating::count();
+        return response()->json([
+            'message' => 'Ok',
+            'caregivers_numbers' => $caregiver_numbers,
+            'booking_numbers' => $booking_numbers,
+            'rating_numbers' => $rating_numbers,
+        ], 200);
     }
 }
