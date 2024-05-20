@@ -44,10 +44,10 @@ class MessagesController extends Controller
         $data = $request->validated();
         $data['user_id'] = auth()->guard('api')->user()->id;
         $chatMessage = Message::create($data);
-        $chatMessage->load('user','caregiver');
+        $chatMessage->load('user', 'caregiver');
 
-         /// TODO send broadcast event to pusher and send notification to onesignal services
-         $this->sendNotificationToOther($chatMessage);
+        /// TODO send broadcast event to pusher and send notification to onesignal services
+        $this->sendNotificationToOther($chatMessage);
 
         return response()->json([
             'data' => $chatMessage,
@@ -64,20 +64,20 @@ class MessagesController extends Controller
         $user = auth()->user();
         $userId = $user->id;
 
-        $chat = Chat::where('id',$chatMessage->chat_id)
-            ->with(['participants'=>function($query) use ($userId){
-                $query->where('user_id','!=',$userId);
+        $chat = Chat::where('id', $chatMessage->chat_id)
+            ->with(['participants' => function ($query) use ($userId) {
+                $query->where('user_id', '!=', $userId);
             }])
             ->first();
-        if(count($chat->participants) > 0){
+        if (count($chat->participants) > 0) {
             $caregiverId = $chat->participants[0]->caregiver_id;
 
-            $caregiver = Caregiver::where('id',$caregiverId)->first();
+            $caregiver = Caregiver::where('id', $caregiverId)->first();
             $caregiver->sendNewMessageNotification([
-                'messageData'=>[
-                    'senderName'=>$user->username,
-                    'message'=>$chatMessage->message,
-                    'chatId'=>$chatMessage->chat_id
+                'messageData' => [
+                    'senderName' => $user->username,
+                    'message' => $chatMessage->message,
+                    'chatId' => $chatMessage->chat_id
                 ]
             ]);
         }

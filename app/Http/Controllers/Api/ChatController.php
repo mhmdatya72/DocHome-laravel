@@ -23,24 +23,24 @@ class ChatController extends Controller
 
         $chats = Chat::where('is_private', $is_private)
             ->hasParticipant(auth()->guard('api')->user()->id)
-            ->whereHas('messages')
-            ->with('lastMessage.user', 'participants.user','participants.caregiver')
+            // ->whereHas('messages')
+            ->with('lastMessage.user', 'participants.user', 'participants.caregiver')
             ->latest('updated_at')
             ->get();
-            return response()->json([
-                'data' => $chats,
-                'status' => 200,
-               'message'=>"get all chats data"
-            ]);
+        return response()->json([
+            'data' => $chats,
+            'status' => 200,
+            'message' => "get all chats data"
+        ]);
     }
     // get one chat
     public function show(Chat $chat): JsonResponse
     {
-        $chat->load('lastMessage.user', 'participants.user','participants.caregiver');
+        $chat->load('lastMessage.user', 'participants.user', 'participants.caregiver');
         return response()->json([
-            'data' => $chat->load('lastMessage.user','participants.user','participants.caregiver'),
+            'data' => $chat->load('lastMessage.user', 'participants.user', 'participants.caregiver'),
             'status' => 200,
-           'message'=>"get one chat data"
+            'message' => "get one chat data"
         ]);
     }
     // store a new chat
@@ -57,15 +57,14 @@ class ChatController extends Controller
                     'caregiver_id' => $data['caregiverId']
                 ]
             ]);
-            $chat->refresh()->load('lastMessage.user','participants.user');
-            return response($chat,200,["success"]);
+            $chat->refresh()->load('lastMessage.user', 'participants.user');
+            return response($chat, 200, ["success"]);
         }
         return response()->json([
-            'data' => $previousChat->load('lastMessage.user','participants.user','participants.caregiver'),
+            'data' => $previousChat->load('lastMessage.user', 'participants.user', 'participants.caregiver'),
             'status' => 200,
-           'message'=>"chat successfully created"
+            'message' => "chat successfully created"
         ]);
-
     }
 
 
