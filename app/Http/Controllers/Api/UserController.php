@@ -123,10 +123,14 @@ class UserController extends Controller
      */
     protected function createNewToken($token)
     {
+        $user = User::where('email', auth()->guard('api')->user()->email);
+        $user->update([
+            'access_token' => $token,
+        ]);
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60,
+            'expires_in' => auth()->factory()->getTTL() * 100000,
             'user' => auth()->guard('api')->user()
         ]);
     }
