@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('center_id');
             $table->foreign('center_id')->references('id')->on('centers');
             $table->timestamp('email_verified_at')->nullable();
-            $table->rememberToken();
+            $table->text('access_token')->nullable();
             $table->timestamps();
         });
     }

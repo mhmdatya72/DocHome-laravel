@@ -41,8 +41,16 @@ class MessagesController extends Controller
     // create a chat message
     public function store(StoreMessageRequest $request): JsonResponse
     {
+
         $data = $request->validated();
         $data['user_id'] = auth()->guard('api')->user()->id;
+        $data['created_by'] = auth()->user()->id;
+        $data['time'] = date('h:i A');
+        if ($file = $request->file('file')) {
+            $name = $file->getClientOriginalName();
+            $file_path = $file->storeAs('chat_files', $name, 'public');
+            $data['file'] = $file_path;
+            }
         $chatMessage = Message::create($data);
         $chatMessage->load('user', 'caregiver');
 

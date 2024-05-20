@@ -130,3 +130,6 @@ Route::group(['middleware' => 'caregiver.auth'], function () {
 Route::post('/ratings', [RatingController::class, 'store']);
 Route::get('/caregiver/{caregiver_id}/ratings', [RatingController::class, 'index']);
 Route::get('/caregiver/{caregiver_id}/average-rating', [RatingController::class, 'averageRating']);
+
+//============================ statistics ================================
+Route::get('statistics',[CaregiverController::class,'statistics']);

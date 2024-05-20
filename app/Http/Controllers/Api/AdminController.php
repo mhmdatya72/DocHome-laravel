@@ -81,9 +81,6 @@ class AdminController extends Controller
             ['profile_image' => $profile_image_path]
         ));
 
-
-
-
         return response()->json([
             'message' => 'Admin successfully registered',
             'admin' => $admin
@@ -127,10 +124,14 @@ class AdminController extends Controller
      */
     protected function createNewToken($token)
     {
+        $admin = Admin::where('email', auth()->guard('admin')->user()->email);
+        $admin->update([
+            'access_token' => $token,
+        ]);
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60,
+            'expires_in' => auth()->factory()->getTTL() * 100000,
             'admin' => auth()->guard('admin')->user()
         ]);
     }

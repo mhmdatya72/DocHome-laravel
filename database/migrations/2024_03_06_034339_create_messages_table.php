@@ -17,6 +17,9 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('caregiver_id')->constrained('caregivers')->cascadeOnDelete();
             $table->text('message')->nullable();
+            $table->integer('created_by');
+            $table->string('file')->nullable();
+            $table->string('time');
             $table->timestamps();
         });
     }
