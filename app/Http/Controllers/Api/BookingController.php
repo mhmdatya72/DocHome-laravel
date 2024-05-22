@@ -101,7 +101,7 @@ class BookingController extends Controller
             if (auth()->check()) {
                 $request->merge(['user_id' => auth()->id()]);
             } else {
-                return response()->json(['error' => 'Unauthorized'], 401);
+                return response()->json(['error' => 'User not authenticated'], 401);
             }
 
             // Validating the request data
@@ -111,12 +111,18 @@ class BookingController extends Controller
                 'user_id' => 'required|exists:users,id',
                 'services.*' => 'required|exists:services,id',
                 'caregiver_id' => 'required|exists:caregivers,id',
-                'booking_date' => 'nullable|date',
+                'booking_date' => 'required|date', // Make booking_date required
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date',
                 'phone_number' => 'required|string|digits:11',
                 'approval_status' => 'nullable|boolean',
             ]);
+
+            // Set start_date to booking_date if not provided
+            if (empty($validatedData['start_date'])) {
+                $validatedData['start_date'] = $validatedData['booking_date'];
+            }
+
             // Check if approval_status is set, otherwise set to null
             $approvalStatus = array_key_exists('approval_status', $validatedData) ? $validatedData['approval_status'] : null;
 
@@ -141,12 +147,13 @@ class BookingController extends Controller
                 'total_price' => $totalPrice,
                 'booking_date' => $validatedData['booking_date'],
                 'start_date' => $validatedData['start_date'],
-                'end_date' => $endDate, // Set end date,
+                'end_date' => $endDate, // Set end date
                 'location' => $point,
                 'phone_number' => $validatedData['phone_number'],
                 'approval_status' => $approvalStatus,
             ]);
             $booking->save();
+
             // Return the latitude and longitude in the response
             $location = [
                 'latitude' => $latitude,
@@ -160,6 +167,7 @@ class BookingController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
 
     /**
      * Display the details of a booking.
@@ -600,4 +608,7 @@ class BookingController extends Controller
         }
         return $encodedBooking;
     }
+
+
+
 }

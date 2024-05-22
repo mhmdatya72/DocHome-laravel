@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\RatingController;
 use App\Models\Center;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\BookingDetailController;
 
 // Users routes
 Route::post('register/user', [UserController::class, 'register']);
@@ -99,6 +100,27 @@ Route::get('bookingsadmin', [BookingController::class, 'bookingAdmin']); // Get 
 Route::get('bookingsuser', [BookingController::class, 'bookingUser']); // Get bookings for user
 Route::get('bookingscaregiver', [BookingController::class, 'bookingCaregiver']); // Get bookings for caregiver
 Route::post('bookings/{id}/approve-or-reject', [BookingController::class, 'approveOrReject']); // Approve or reject a booking
+
+
+
+
+// ====================== BookingDetail api ======================================
+// Route to get the total count of bookings for the authenticated user
+Route::get('user-bookings-count', [BookingDetailController::class, 'getUserBookingsCount']);
+// Route to get the total count of bookings for the authenticated caregiver
+Route::get('caregiver-bookings-count', [BookingDetailController::class, 'getCaregiverBookingsCount']);
+// Route to get the count of unique caregivers used by the authenticated user
+Route::get('user-caregiver-count', [BookingDetailController::class, 'caregiverCountByUser']);
+// Route to get the count of unique users served by the authenticated caregiver
+Route::get('caregiver-user-count', [BookingDetailController::class, 'userCountBycaregiver']);
+
+
+
+
+
+
+
+
 
 // ====================== chat api ======================================
 Route::apiResource('chat', ChatController::class)->only(['index', 'store', 'show']);
