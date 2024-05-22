@@ -7,6 +7,7 @@ use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -184,12 +185,10 @@ class CategoriesController extends Controller
             // Get the logged-in user's center_id
             $user = Auth::user();
             $center_id = $user->center_id;
-
             // Find Caregivers by category_id and center_id
             $caregivers = Caregiver::where('category_id', $category_id)
                 ->where('center_id', $center_id)
                 ->get();
-
             // Check if Caregivers are found
             if ($caregivers->isEmpty()) {
                 // Return a 404 response if no Caregivers are found for this category and center

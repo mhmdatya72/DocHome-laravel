@@ -173,8 +173,7 @@ class CaregiverController extends Controller
     {
         try {
             // Find Caregivers by category_id
-            $Caregivers = Caregiver::where('category_id', $category_id)->get();
-
+            $Caregivers = Caregiver::where('category_id', $category_id)->where('status',1)->get();
             // Check if Caregivers are found
             if ($Caregivers->isEmpty()) {
                 return response()->json(['error' => 'Caregivers not found for this category.'], 404);
