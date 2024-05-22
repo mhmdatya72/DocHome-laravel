@@ -73,7 +73,9 @@ class CategoriesController extends Controller
 
             // Generate image name and store it
             $imageName = $validatedData['name_en'] . '.' . $imageExtension;
-            $imagePath = $image->storeAs('', $imageName, 'categories');
+            $directory = 'categories';
+            $imagePath = $image->storeAs($directory, $imageName, 'public');
+
 
             // Create a new category
             $category = Category::create([

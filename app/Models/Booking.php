@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 /**
  * @method static where(string $string, $caregiverId)
  * @method static findOrFail($id)
+ * @method static groupBy(string $string)
  */
 class Booking extends Model
 {
@@ -46,5 +47,6 @@ class Booking extends Model
     {
         return $this->belongsToMany(Service::class, 'booking_service');
     }
+
 }
 
