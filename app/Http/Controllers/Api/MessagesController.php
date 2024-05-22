@@ -44,7 +44,6 @@ class MessagesController extends Controller
 
         $data = $request->validated();
         $data['user_id'] = auth()->guard('api')->user()->id;
-        $data['created_by'] = auth()->user()->id;
         $data['time'] = date('h:i A');
         if ($file = $request->file('file')) {
             $name = $file->getClientOriginalName();

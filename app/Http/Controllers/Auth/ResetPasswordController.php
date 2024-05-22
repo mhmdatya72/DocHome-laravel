@@ -64,17 +64,20 @@ class ResetPasswordController extends Controller
             if ($passwordReset && Carbon::parse($passwordReset->created_at)->addHour() < now()) {
                 return response()->json([
                     'message' => "otp expired",
-                ],404);
-            } else if ($passwordReset && $passwordReset->otp != $otp) {
+                ], 404);
+            } else if ($passwordReset && $passwordReset->otp == $otp) {
                 return response()->json([
-                    'message' => "otp not correct",
+                    'message' => "otp is correct",
                 ], 404);
             }
             return response()->json([
-                'success' => "otp is correct"
+                'message' => "otp is not correct"
             ]);
         } catch (Exception $e) {
             return response()->json(
+                data: [
+                    'message'  => "there was an error"
+                ],
                 status: 500
             );
         }
@@ -89,13 +92,23 @@ class ResetPasswordController extends Controller
             ]);
             $email = $data["email"];
             $newPassword = bcrypt($data["new_password"]);
-            // update the password
-            User::firstWhere('email', $email)->update(['password' => $newPassword]);
-            return response()->json(
-                data: [
-                    "message" => "password updated successfully",
-                ]
-            );
+
+            if (User::firstWhere("email",$email)) {
+                // update the password
+                User::firstWhere('email', $email)->update(['password' => $newPassword]);
+                return response()->json(
+                    data: [
+                        "message" => "password updated successfully",
+                    ]
+                );
+            } else {
+                return response()->json(
+                    data: [
+                        "message" => "email not found",
+                    ],
+                    status: 404
+                );
+            }
         } catch (Exception $e) {
             return response()->json(
                 status: 500

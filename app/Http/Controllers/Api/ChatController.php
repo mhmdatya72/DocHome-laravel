@@ -20,9 +20,9 @@ class ChatController extends Controller
         if ($request->has('is_private')) {
             $isPrivate = (int)$data['is_private'];
         }
-
+        $id = auth()->guard('api')->user()->id ?? auth()->guard('caregiver')->user()->id;
         $chats = Chat::where('is_private', $is_private)
-            ->hasParticipant(auth()->guard('api')->user()->id)
+            ->hasParticipant($id)
             // ->whereHas('messages')
             ->with('lastMessage.user', 'participants.user', 'participants.caregiver')
             ->latest('updated_at')

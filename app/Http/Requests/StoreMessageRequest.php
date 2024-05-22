@@ -28,7 +28,8 @@ class StoreMessageRequest extends FormRequest
         return [
             'chat_id'=>"required|exists:{$chatModel},id",
             'caregiver_id'=>"required|exists:{$caregiverModel},id",
-            'message'=>'required|string'
+            'message'=>'required|string',
+            'created_by'=>'required|string'  //  p   for patient , c   for caregiver
         ];
     }
 }
