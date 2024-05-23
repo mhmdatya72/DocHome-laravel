@@ -154,9 +154,10 @@ Route::get('/caregiver/{caregiver_id}/ratings', [RatingController::class, 'index
 Route::get('/caregiver/{caregiver_id}/average-rating', [RatingController::class, 'averageRating']);
 
 //============================ statistics ================================
-Route::get('statistics',[CaregiverController::class,'statistics']);
+Route::get('statistics', [CaregiverController::class, 'statistics']);
 
-Route::get('/test',function (){
-    $id = auth()->guard('api')->user()->name ?? auth()->guard('caregiver')->user()->name;
-    return $id;
+Route::get('/test', function () {
+    $user = auth()->guard('api')->user() ?? auth()->guard('caregiver')->user();
+    $id = $user->id;
+    return auth()->user();
 });

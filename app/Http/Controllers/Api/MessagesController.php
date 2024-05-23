@@ -43,7 +43,7 @@ class MessagesController extends Controller
     {
 
         $data = $request->validated();
-        $data['user_id'] = auth()->guard('api')->user()->id;
+        $data['user_id'] = auth()->guard('api')->user()->id ?? auth()->guard('caregiver')->user()->id;
         $data['time'] = date('h:i A');
         if ($file = $request->file('file')) {
             $name = $file->getClientOriginalName();
@@ -68,7 +68,7 @@ class MessagesController extends Controller
 
         broadcast(new NewMessageSent($chatMessage))->toOthers();
 
-        $user = auth()->user();
+        $user = auth()->guard('api')->user() ?? auth()->guard('caregiver')->user();
         $userId = $user->id;
 
         $chat = Chat::where('id', $chatMessage->chat_id)
