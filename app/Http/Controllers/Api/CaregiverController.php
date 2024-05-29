@@ -37,13 +37,14 @@ class CaregiverController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
+        if (!$token = auth()->guard('caregiver')->attempt($validator->validated())) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
         $status = Caregiver::firstWhere("email", $request->email)->status;
         if ($status == 0) {
             return response()->json(['error' => "Please wait until admin accept you"], 403);
         }
-        if (!$token = auth()->guard('caregiver')->attempt($validator->validated())) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
+
 
         return $this->createNewToken($token);
     }
@@ -173,7 +174,7 @@ class CaregiverController extends Controller
     {
         try {
             // Find Caregivers by category_id
-            $Caregivers = Caregiver::where('category_id', $category_id)->where('status',1)->get();
+            $Caregivers = Caregiver::where('category_id', $category_id)->where('status', 1)->get();
             // Check if Caregivers are found
             if ($Caregivers->isEmpty()) {
                 return response()->json(['error' => 'Caregivers not found for this category.'], 404);
