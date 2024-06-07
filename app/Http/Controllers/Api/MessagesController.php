@@ -43,13 +43,24 @@ class MessagesController extends Controller
     {
 
         $data = $request->validated();
-        $data['user_id'] = auth()->guard('api')->user()->id ?? auth()->guard('caregiver')->user()->id;
+        // todo -> possible solution added by "Ahmed"
+        // check who send the message [patient or caregiver]
+        // if(isset(auth()->guard('api')->user()->id)){ // patient send the message
+        //     $data['user_id'] = auth()->guard('api')->user()->id;
+        //     $data['caregiver_id'] = $request->caregiver_id;
+        // } else { // caregiver send the message
+        //     // auth()->guard('caregiver')->user()->id
+        //     $data['caregiver_id'] = auth()->guard('caregiver')->user()->id;
+        //     $data['user_id'] = $request->user_id;
+        // }
+
+        $data['user_id'] = auth()->guard('api')->user()->id;
         $data['time'] = date('h:i A');
         if ($file = $request->file('file')) {
             $name = $file->getClientOriginalName();
             $file_path = $file->storeAs('chat_files', $name, 'public');
             $data['file'] = $file_path;
-            }
+        }
         $chatMessage = Message::create($data);
         $chatMessage->load('user', 'caregiver');
 
@@ -68,7 +79,7 @@ class MessagesController extends Controller
 
         broadcast(new NewMessageSent($chatMessage))->toOthers();
 
-        $user = auth()->guard('api')->user() ?? auth()->guard('caregiver')->user();
+        $user = auth()->user();
         $userId = $user->id;
 
         $chat = Chat::where('id', $chatMessage->chat_id)

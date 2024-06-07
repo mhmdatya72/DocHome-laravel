@@ -18,6 +18,7 @@ use App\Models\Center;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\BookingDetailController;
+use App\Http\Controllers\Api\PaymentController;
 
 // Users routes
 Route::post('register/user', [UserController::class, 'register']);
@@ -156,8 +157,5 @@ Route::get('/caregiver/{caregiver_id}/average-rating', [RatingController::class,
 //============================ statistics ================================
 Route::get('statistics', [CaregiverController::class, 'statistics']);
 
-Route::get('/test', function () {
-    $user = auth()->guard('api')->user() ?? auth()->guard('caregiver')->user();
-    $id = $user->id;
-    return auth()->user();
-});
+//============================ payment =================================
+Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
