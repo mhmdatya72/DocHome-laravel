@@ -69,6 +69,10 @@ Route::middleware('admin.auth')->group(function () {
     Route::post('centers', [CenterController::class, 'store']); // Store a new center
     Route::post('centers/{id}', [CenterController::class, 'update']); // Update a center
     Route::delete('centers/{id}', [CenterController::class, 'destroy']); // Delete a center
+
+    Route::get('getAllUsers', [AdminController::class, 'getAllUser']); // Get all User
+    Route::get('getAllCaregivers', [AdminController::class, 'getAllCaregiver']); // Get all User
+
 });
 
 

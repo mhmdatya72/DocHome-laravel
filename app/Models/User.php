@@ -40,15 +40,24 @@ class User extends Authenticatable implements JWTSubject
      *
      * @var array<int, string>
      */
-    // protected $fillable = [
-    //     'name',
-    //     'email',
-    //     'password',
-    //     'phone',
-    //     'image',
-    //     'center_id'
-    // ];
-    protected $guarded =['id'];
+    //  User attributes
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'phone',
+        'profile_image',
+        'center_id',
+        'email_verified_at',
+        'access_token',
+    ];
+
+    // Hide sensitive attributes when returning as JSON
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+    // protected $guarded =['id'];
 
     public function chats() : HasMany
     {
@@ -60,10 +69,10 @@ class User extends Authenticatable implements JWTSubject
      *
      * @var array<int, string>
      */
-    protected $hidden = [
-        'password',
-        // 'remember_token',
-    ];
+    // protected $hidden = [
+    //     'password',
+    //     // 'remember_token',
+    // ];
 
     /**
      * The attributes that should be cast.

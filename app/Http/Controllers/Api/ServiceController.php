@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Service;
 use App\Models\Category; // Import the Category model
+use App\Models\Service;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -140,5 +141,9 @@ class ServiceController extends Controller
             return response()->json(['error' => 'An error occurred.'], 500);
         }
     }
-}
 
+
+
+
+
+}

@@ -149,4 +149,5 @@ class UserController extends Controller
             'message' => "all users except me"
         ]);
     }
+
 }
