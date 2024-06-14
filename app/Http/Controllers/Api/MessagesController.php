@@ -39,20 +39,23 @@ class MessagesController extends Controller
         ]);
     }
     // create a chat message
-    public function store(StoreMessageRequest $request): JsonResponse
+    public function store(StoreMessageRequest $request)
     {
-
+        if (!auth()->check()) { // not patient or caregiver
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
         $data = $request->validated();
-        // todo -> possible solution added by "Ahmed"
-        // check who send the message [patient or caregiver]
-        // if(isset(auth()->guard('api')->user()->id)){ // patient send the message
-        //     $data['user_id'] = auth()->guard('api')->user()->id;
-        //     $data['caregiver_id'] = $request->caregiver_id;
-        // } else { // caregiver send the message
-        //     // auth()->guard('caregiver')->user()->id
-        //     $data['caregiver_id'] = auth()->guard('caregiver')->user()->id;
-        //     $data['user_id'] = $request->user_id;
-        // }
+        // TODO -> possible solution added by "Ahmed"
+        // TODO -> check who send the message [patient or caregiver]
+        if (isset(auth()->guard('api')->user()->id)) { // patient send the message
+            $data['user_id'] = auth()->guard('api')->user()->id;
+            $data['caregiver_id'] = $request->receiver_id;
+        } else { // caregiver send the message
+            $data['caregiver_id'] = auth()->guard('caregiver')->user()->id;
+            $data['user_id'] = $request->receiver_id;
+        }
+
+        unset($data["receiver_id"]);
 
         $data['user_id'] = auth()->guard('api')->user()->id;
         $data['time'] = date('h:i A');

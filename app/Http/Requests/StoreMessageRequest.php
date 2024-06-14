@@ -27,7 +27,7 @@ class StoreMessageRequest extends FormRequest
         $caregiverModel = get_class(new Caregiver());
         return [
             'chat_id'=>"required|exists:{$chatModel},id",
-            'caregiver_id'=>"required|exists:{$caregiverModel},id",
+            'receiver_id'=>"required",
             'message'=>'required|string',
             'created_by'=>'required|string'  //  p   for patient , c   for caregiver
         ];

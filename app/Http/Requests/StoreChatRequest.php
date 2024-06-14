@@ -23,10 +23,10 @@ class StoreChatRequest extends FormRequest
      */
     public function rules(): array
     {
-       // $userModel = get_class(new User());
+       $userModel = get_class(new User());
         $caregiverModel = get_class(new Caregiver());
         return [
-          // 'user_id' => "required|exists:{$userModel},id",
+          'user_id' => "required|exists:{$userModel},id",
            'caregiver_id' => "required|exists:{$caregiverModel},id",
            'name' => 'nullable',
            'is_private' => 'nullable|boolean',

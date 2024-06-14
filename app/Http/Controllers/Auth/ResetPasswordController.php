@@ -95,9 +95,9 @@ class ResetPasswordController extends Controller
             $email = $data["email"];
             $newPassword = bcrypt($data["new_password"]);
 
-            if (User::firstWhere("email", $email)) {
+            if ($user = User::firstWhere("email", $email)) {
                 // update the password
-                User::firstWhere('email', $email)->update(['password' => $newPassword]);
+                $user->update(['password' => $newPassword]);
                 return response()->json(
                     data: [
                         "message" => "password updated successfully",

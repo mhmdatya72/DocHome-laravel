@@ -14,9 +14,11 @@ class ChatController extends Controller
     // get all chats
     public function index(GetChatRequest $request): JsonResponse
     {
+        if (!auth()->check()) { // not patient or caregiver
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
         $data = $request->validated();
         $is_private = 1;
-
         if ($request->has('is_private')) {
             $isPrivate = (int)$data['is_private'];
         }

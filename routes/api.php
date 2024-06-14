@@ -124,8 +124,11 @@ Route::get('caregiver-user-count', [BookingDetailController::class, 'userCountBy
 
 
 // ====================== chat api ======================================
+// /chat [get]
+// /chat [post]
+// /chat/{1} [get]
 Route::apiResource('chat', ChatController::class)->only(['index', 'store', 'show']);
-Route::apiResource('chat_message', MessagesController::class)->only(['index', 'store']);
+Route::apiResource('chat_message', MessagesController::class)->only(['index', 'store']); // chat_id, receiver_id, message, created_by
 Route::apiResource('user', UserController::class)->only(['index']);
 
 //===========================NOTIFICATION ROUTE=========================
