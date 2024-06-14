@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Caregiver;
 use App\Models\Image;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -135,4 +137,46 @@ class AdminController extends Controller
             'admin' => auth()->guard('admin')->user()
         ]);
     }
+    
+    public function getAllUser()
+    {
+        try {
+            // Check if admin is authenticated
+            if (!Auth::guard('admin')->check()) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+    
+            // Fetch all users
+            $users = User::all();
+    
+            // Return users as JSON
+            return response()->json(['message' => 'All users except me', 'users' => $users], 200);
+    
+        } catch (\Exception $e) {
+            // Return error response
+            return response()->json(['error' => 'Failed to fetch users', 'message' => $e->getMessage()], 500);
+        }
+    }
+    public function getAllCaregiver()
+    {
+        try {
+            // Check if admin is authenticated
+            if (!Auth::guard('admin')->check()) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+    
+            // Fetch all Caregivers
+            $Caregivers = Caregiver::all();
+    
+            // Return Caregivers as JSON
+            return response()->json(['message' => 'All Caregivers except me', 'Caregivers' => $Caregivers], 200);
+    
+        } catch (\Exception $e) {
+            // Return error response
+            return response()->json(['error' => 'Failed to fetch Caregivers', 'message' => $e->getMessage()], 500);
+        }
+    }
+    
+    
+
 }

@@ -69,6 +69,10 @@ Route::middleware('admin.auth')->group(function () {
     Route::post('centers', [CenterController::class, 'store']); // Store a new center
     Route::post('centers/{id}', [CenterController::class, 'update']); // Update a center
     Route::delete('centers/{id}', [CenterController::class, 'destroy']); // Delete a center
+
+    Route::get('getAllUsers', [AdminController::class, 'getAllUser']); // Get all User
+    Route::get('getAllCaregivers', [AdminController::class, 'getAllCaregiver']); // Get all User
+
 });
 
 
@@ -147,6 +151,13 @@ Route::group(['middleware' => 'caregiver.auth'], function () {
     Route::post('store_report', [ReportsController::class, 'store']);
     Route::put('update_report/{id}', [ReportsController::class, 'update']);
     Route::delete('delete_report/{id}', [ReportsController::class, 'destroy']);
+    Route::post('caregiver-profile-update', [CaregiverController::class, 'update']);
+
+});
+
+// Users roles
+Route::middleware('auth:api')->group(function () {
+    Route::post('user-profile-update', [UserController::class, 'update']);
 });
 
 

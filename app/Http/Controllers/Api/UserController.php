@@ -9,8 +9,10 @@ use App\Models\Image;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -59,30 +61,36 @@ class UserController extends Controller
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|confirmed|min:6',
-            // 'profile_image' => 'mimes:jpeg,gif,png|max:2048',
-            'phone' => 'required|min:11|max:11',
+            'profile_image' => 'nullable|mimes:jpeg,gif,png|max:2048',
+            'phone' => 'required|digits:11',
             'center_id' => "required|exists:{$centerModel},id",
         ]);
+
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 422);
         }
 
-        // upload image in public disk
-        // if ($file = $request->file('profile_image')) {
-        //     $name = $file->getClientOriginalName();
-        //     $profile_image_path = $file->storeAs('images/users/' . "$request->name" . '/profile_image', $name, 'public');
+        $profile_image_path = null;
 
-        //     // insert image in image table
-        //     $data = new Image();
-        //     $data->name = $name;
-        //     $data->path = $profile_image_path;
-        //     $data->save();
-        // }
+        // Upload image in public disk if exists
+        if ($file = $request->file('profile_image')) {
+            $name = time() . '_' . $file->getClientOriginalName();
+            $profile_image_path = $file->storeAs('images/users/' . $request->name . '/profile_image', $name, 'public');
+
+            // Insert image in image table
+            $data = new Image();
+            $data->name = $name;
+            $data->path = $profile_image_path;
+            $data->save();
+        }
+
+        // Create the user
         $user = User::create(array_merge(
             $validator->validated(),
-            ['password' => bcrypt($request->password)],
-            // ['profile_image' => $profile_image_path]
+            ['password' => Hash::make($request->password)],
+            ['profile_image' => $profile_image_path]
         ));
+
         return response()->json([
             'message' => 'User successfully registered',
             'user' => $user
@@ -148,5 +156,62 @@ class UserController extends Controller
             'status' => 200,
             'message' => "all users except me"
         ]);
+    }
+    /**
+     * Update the authenticated user's profile information.
+     */
+    public function update(Request $request)
+    {
+        $centerModel = get_class(new Center());
+
+        // Get the authenticated user
+        $user = Auth::user();
+
+        // Define validation rules
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|required|string|between:2,100',
+            'email' => "sometimes|required|string|email|max:100|unique:users,email,{$user->id}",
+            'password' => 'sometimes|nullable|string|confirmed|min:6',
+            'profile_image' => 'nullable|mimes:jpeg,gif,png|max:2048',
+            'phone' => 'sometimes|required|digits:11',
+            'center_id' => "sometimes|required|exists:{$centerModel},id",
+        ]);
+
+        // Return validation errors if validation fails
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $profile_image_path = $user->profile_image;
+
+        // Check if a profile image is uploaded and handle the upload
+        if ($file = $request->file('profile_image')) {
+            // Delete the old profile image if it exists
+            if ($profile_image_path) {
+                Storage::disk('public')->delete($profile_image_path);
+            }
+
+            // Use the authenticated user's name as the image file name
+            $name = $user->name . '.' . $file->getClientOriginalExtension();
+            $profile_image_path = $file->storeAs('images/users/' . $user->name . '/profile_image', $name, 'public');
+
+            // Insert new image in image table
+            $image = new Image();
+            $image->name = $name;
+            $image->path = $profile_image_path;
+            $image->save();
+        }
+
+        // Update user data
+        $user->update(array_merge(
+            $validator->validated(),
+            $request->password ? ['password' => Hash::make($request->password)] : [],
+            ['profile_image' => $profile_image_path]
+        ));
+
+        return response()->json([
+            'message' => 'User successfully updated',
+            'user' => $user
+        ], 200);
     }
 }
