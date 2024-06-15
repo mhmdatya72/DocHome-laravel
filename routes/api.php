@@ -19,6 +19,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\BookingDetailController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Models\Caregiver;
+use Illuminate\Support\Facades\Auth;
 
 // Users routes
 Route::post('register/user', [UserController::class, 'register']);
@@ -111,13 +113,10 @@ Route::post('bookings/{id}/approve-or-reject', [BookingController::class, 'appro
 
 // ====================== BookingDetail api ======================================
 // Route to get the total count of bookings for the authenticated user
-Route::get('user-bookings-count', [BookingDetailController::class, 'getUserBookingsCount']);
+Route::get('user-profile-statistics', [BookingDetailController::class, 'getUserProfileStatistics']);
 // Route to get the total count of bookings for the authenticated caregiver
-Route::get('caregiver-bookings-count', [BookingDetailController::class, 'getCaregiverBookingsCount']);
-// Route to get the count of unique caregivers used by the authenticated user
-Route::get('user-caregiver-count', [BookingDetailController::class, 'caregiverCountByUser']);
-// Route to get the count of unique users served by the authenticated caregiver
-Route::get('caregiver-user-count', [BookingDetailController::class, 'userCountBycaregiver']);
+Route::get('caregiver-profile-statistics', [BookingDetailController::class, 'getCaregiverProfileStatistics']);
+
 
 
 
@@ -152,7 +151,6 @@ Route::group(['middleware' => 'caregiver.auth'], function () {
     Route::put('update_report/{id}', [ReportsController::class, 'update']);
     Route::delete('delete_report/{id}', [ReportsController::class, 'destroy']);
     Route::post('caregiver-profile-update', [CaregiverController::class, 'update']);
-
 });
 
 // Users roles
@@ -173,3 +171,18 @@ Route::get('statistics', [CaregiverController::class, 'statistics']);
 
 //============================ payment =================================
 Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
+
+
+// get popular caregivers in your center
+Route::get('/popular-caregivers', function () {
+    if (!auth()->check()) {
+        return response()->json([
+            'message' => "your ar not authorized"
+        ], 401);
+    }
+    $popular = Caregiver::where('center_id', auth()->user()->center_id)->where('stars', '>=', 4.5)->get();
+    $popular->makeHidden(["professional_card_image", "id_card_image","access_token"]);
+    return response()->json([
+        'data' => $popular,
+    ], 200);
+});

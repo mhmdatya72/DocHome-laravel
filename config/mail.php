@@ -44,7 +44,7 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
-            // i add this
+            // add this 3 lines
             'allow_self_signed' => true,
             'verify_peer' => false,
             'verify_peer_name' => false,

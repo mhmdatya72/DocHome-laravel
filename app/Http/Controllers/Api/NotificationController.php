@@ -16,6 +16,6 @@ class NotificationController extends Controller
         // Broadcast notification event
         event(new NotificationEvent($message));
 
-        return response()->json(['message' => 'Notification sent successf']);
+        return response()->json(['message' => 'Notification sent successfully']);
     }
 }
