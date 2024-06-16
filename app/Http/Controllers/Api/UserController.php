@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\NewUseNotification;
 
 class UserController extends Controller
 {
@@ -90,6 +92,15 @@ class UserController extends Controller
             ['password' => Hash::make($request->password)],
             ['profile_image' => $profile_image_path]
         ));
+
+        //user notifications for registering
+
+        $user = User::where('id',$user_id)->first();
+        $user_id = auth()->user()->id;
+        $message = 'welcome to our homecare services';
+        Notification::send($user,NewUseNotification($user_id, $message));
+
+
 
         return response()->json([
             'message' => 'User successfully registered',

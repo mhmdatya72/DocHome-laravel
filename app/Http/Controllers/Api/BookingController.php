@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\MakeBookingNotification;
+
 class BookingController extends Controller
 {
     /**
@@ -159,6 +162,12 @@ class BookingController extends Controller
                 'latitude' => $latitude,
                 'longitude' => $longitude,
             ];
+              //user notifications for Making booking
+            $user = User::where('id',$user_id)->first();
+            $user_id = auth()->user()->id;
+            $caregiver =Caregiver::where('id',$validatedData['caregiver_id'])->first();
+            $message = 'Booking created successfully with '.$caregiver;
+            Notification::send($user,MakeBookingNotification($user_id, $message));
 
             return response()->json(['message' => 'Booking created successfully', 'booking' => $booking , 'location' => $location], 201);
         } catch (ValidationException $e) {
