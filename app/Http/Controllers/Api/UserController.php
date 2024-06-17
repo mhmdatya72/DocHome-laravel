@@ -18,6 +18,7 @@ use Illuminate\Validation\ValidationException;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\NewUseNotification;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -98,6 +99,10 @@ class UserController extends Controller
         $user = User::where('id',$user_id)->first();
         $user_id = auth()->user()->id;
         $message = 'welcome to our homecare services';
+        DB::table('notifications')->insert([
+            'Owner'=>'p',
+            'Owner_id'=>$user_id
+       ]);
         Notification::send($user,NewUseNotification($user_id, $message));
 
 

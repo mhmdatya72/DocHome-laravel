@@ -136,6 +136,9 @@ Route::apiResource('user', UserController::class)->only(['index']);
 
 //===========================NOTIFICATION ROUTE=========================
 Route::post('send-notification', [NotificationController::class, 'sendNotification']);
+Route::post('userNotifi', [NotificationController::class, 'userNotifi']);
+Route::post('caregiverNotifi', [NotificationController::class, 'caregiverNotifi']);
+
 
 
 //======================== reports api ===================================
