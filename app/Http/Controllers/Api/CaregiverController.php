@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class CaregiverController extends Controller
 {
@@ -202,131 +203,63 @@ class CaregiverController extends Controller
     }
 
 
-public function update(Request $request)
-{
-    $centerModel = get_class(new Center());
-    $categoryModel = get_class(new Category());
+    public function update(Request $request)
+    {
+        $centerModel = get_class(new Center());
+        $categoryModel = get_class(new Category());
 
-    // Get the authenticated caregiver
-    $caregiver = Auth::guard('caregiver')->user(); // Assuming you're using a 'caregiver' guard
+        // Get the authenticated caregiver
+        $caregiver = Auth::guard('caregiver')->user(); // Assuming you're using a 'caregiver' guard
 
-    // Define validation rules
-    $validator = Validator::make($request->all(), [
-        'name' => 'sometimes|required|string|between:2,100',
-        'email' => "sometimes|required|string|email|max:100|unique:caregivers,email,{$caregiver->id}",
-        'password' => 'sometimes|nullable|string|confirmed|min:6',
-        'phone' => "sometimes|required|min:11|max:11|unique:caregivers,phone,{$caregiver->id}",
-        'profile_image' => 'nullable|mimes:jpeg,gif,png|max:2048',
-        'professional_card_image' => 'nullable|mimes:jpeg,gif,png|max:2048',
-        'id_card_image' => 'nullable|mimes:jpeg,gif,png|max:2048',
-        'center_id' => "sometimes|required|exists:{$centerModel},id",
-        'category_id' => "sometimes|required|exists:{$categoryModel},id",
-    ]);
+        // Define validation rules
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|required|string|between:2,100',
+            'email' => "sometimes|required|string|email|max:100|unique:caregivers,email,{$caregiver->id}",
+            'password' => 'sometimes|nullable|string|confirmed|min:6',
+            'phone' => "sometimes|required|min:11|max:11|unique:caregivers,phone,{$caregiver->id}",
+            'profile_image' => 'nullable|mimes:jpeg,gif,png|max:2048',
+            'center_id' => "sometimes|required|exists:{$centerModel},id",
+            'category_id' => "sometimes|required|exists:{$categoryModel},id",
+        ]);
 
-    // Return validation errors if validation fails
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 422);
-    }
-
-    $profile_image_path = $caregiver->profile_image;
-    $professional_card_image_path = $caregiver->professional_card_image;
-    $id_card_image_path = $caregiver->id_card_image;
-
-    // Extract the old name
-    $oldName = str_replace(' ', '_', $caregiver->name);
-
-    // Prepare array for new image paths
-    $updateData = $validator->validated();
-
-    // If the name is being updated, delete old directories
-    if ($request->has('name') && $request->name !== $caregiver->name) {
-        $newName = str_replace(' ', '_', $request->name);
-
-        // Delete old profile image if exists
-        if ($profile_image_path && Storage::disk('public')->exists($profile_image_path)) {
-            Storage::disk('public')->delete($profile_image_path);
+        // Return validation errors if validation fails
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Delete old professional card image if exists
-        if ($professional_card_image_path && Storage::disk('public')->exists($professional_card_image_path)) {
-            Storage::disk('public')->delete($professional_card_image_path);
+        $profile_image_path = $caregiver->profile_image;
+
+        // Prepare array for new image paths
+        $updateData = $validator->validated();
+
+        // Check if profile_image is uploaded and handle the upload
+        if ($file = $request->file('profile_image')) {
+            if ($profile_image_path) {
+                Storage::disk('public')->delete($profile_image_path);
+            }
+
+            $name = Str::uuid()  . $file->getClientOriginalName();
+            $profile_image_path = $file->storeAs('images/caregivers/profile_images', $name, 'public');
+
+            $image = new Image();
+            $image->name = $name;
+            $image->path = $profile_image_path;
+            $image->save();
+
+            $updateData['profile_image'] = $profile_image_path;
         }
 
-        // Delete old ID card image if exists
-        if ($id_card_image_path && Storage::disk('public')->exists($id_card_image_path)) {
-            Storage::disk('public')->delete($id_card_image_path);
+        // Check if password is provided and hash it
+        if ($request->password) {
+            $updateData['password'] = bcrypt($request->password);
         }
 
-        // Update image paths with the new name
-        $profile_image_path = null;
-        $professional_card_image_path = null;
-        $id_card_image_path = null;
+        // Update caregiver data
+        $caregiver->update($updateData);
+
+        return response()->json([
+            'message' => 'Caregiver successfully updated',
+            'caregiver' => $caregiver
+        ], 200);
     }
-
-    // Check if profile_image is uploaded and handle the upload
-    if ($file = $request->file('profile_image')) {
-        if ($profile_image_path) {
-            Storage::disk('public')->delete($profile_image_path);
-        }
-
-        $name = time() . '_' . $file->getClientOriginalName();
-        $profile_image_path = $file->storeAs('images/caregivers/' . ($newName ?? $oldName) . '/profile_image', $name, 'public');
-
-        $image = new Image();
-        $image->name = $name;
-        $image->path = $profile_image_path;
-        $image->save();
-
-        $updateData['profile_image'] = $profile_image_path;
-    }
-
-    // Check if professional_card_image is uploaded and handle the upload
-    if ($file = $request->file('professional_card_image')) {
-        if ($professional_card_image_path) {
-            Storage::disk('public')->delete($professional_card_image_path);
-        }
-
-        $name = time() . '_' . $file->getClientOriginalName();
-        $professional_card_image_path = $file->storeAs('images/caregivers/' . ($newName ?? $oldName) . '/professional_card_image', $name, 'public');
-
-        $image = new Image();
-        $image->name = $name;
-        $image->path = $professional_card_image_path;
-        $image->save();
-
-        $updateData['professional_card_image'] = $professional_card_image_path;
-    }
-
-    // Check if id_card_image is uploaded and handle the upload
-    if ($file = $request->file('id_card_image')) {
-        if ($id_card_image_path) {
-            Storage::disk('public')->delete($id_card_image_path);
-        }
-
-        $name = time() . '_' . $file->getClientOriginalName();
-        $id_card_image_path = $file->storeAs('images/caregivers/' . ($newName ?? $oldName) . '/id_card_image', $name, 'public');
-
-        $image = new Image();
-        $image->name = $name;
-        $image->path = $id_card_image_path;
-        $image->save();
-
-        $updateData['id_card_image'] = $id_card_image_path;
-    }
-
-    // Check if password is provided and hash it
-    if ($request->password) {
-        $updateData['password'] = bcrypt($request->password);
-    }
-
-    // Update caregiver data
-    $caregiver->update($updateData);
-
-    return response()->json([
-        'message' => 'Caregiver successfully updated',
-        'caregiver' => $caregiver
-    ], 200);
 }
-
-
-   }

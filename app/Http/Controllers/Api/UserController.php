@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -191,9 +192,9 @@ class UserController extends Controller
                 Storage::disk('public')->delete($profile_image_path);
             }
 
-            // Use the authenticated user's name as the image file name
-            $name = $user->name . '.' . $file->getClientOriginalExtension();
-            $profile_image_path = $file->storeAs('images/users/' . $user->name . '/profile_image', $name, 'public');
+            // Use  dynamic unique id as the image file name
+            $name = Str::uuid() . '.' . $file->getClientOriginalExtension(); // store image with
+            $profile_image_path = $file->storeAs('images/users/profile_images', $name , 'public');
 
             // Insert new image in image table
             $image = new Image();

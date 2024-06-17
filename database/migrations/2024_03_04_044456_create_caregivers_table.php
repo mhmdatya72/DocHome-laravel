@@ -26,6 +26,11 @@ return new class extends Migration
             $table->foreignId('category_id')->references('id')->on('categories');
             $table->timestamp('email_verified_at')->nullable();
             $table->text('access_token')->nullable();
+            $table->text('about')->nullable();
+            $table->float('stars', 2, 1)->default(0);
+            $table->integer('number_of_reviews')->default(0);
+            $table->string('title')->nullable();
+            $table->tinyInteger('open')->default(1);
             $table->timestamps();
         });
     }

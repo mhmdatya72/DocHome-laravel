@@ -12,22 +12,33 @@ class RatingController extends Controller
 {
     public function store(Request $request): \Illuminate\Http\JsonResponse
     {
+        if (!auth()->check()) {
+            return response()->json([
+                'message' => "your ar not authorized"
+            ], 401);
+        }
         $request->validate([
             'caregiver_id' => 'required|exists:caregivers,id',
-            'user_id' => 'required|exists:users,id',
-            'rating' => 'required|numeric|min:1|max:5',
+            'rating' => 'required',
             'comments' => 'nullable|string',
         ]);
+        $rating = Rating::where('user_id', auth()->user()->id)->where('caregiver_id', $request->caregiver_id)->first();
+        if ($rating) {
+            $rating->rating = $request->rating;
+            $rating->comments = $request->comments;
+            $rating->save();
+        } else {
+            Rating::create([
+                'caregiver_id' => $request->caregiver_id,
+                'user_id' => auth()->user()->id,
+                'rating' => $request->rating,
+                'comments' => $request->comments,
+            ]);
+        }
 
-        $rating = Rating::create([
-            'caregiver_id' => $request->caregiver_id,
-            'user_id' => $request->user_id,
-            'rating' => $request->rating,
-            'comments' => $request->comments,
-        ]);
         $averageRating = Rating::where('caregiver_id', $request->caregiver_id)->avg('rating');
         $numberOfRatings = Rating::where('caregiver_id', $request->caregiver_id);
-        Caregiver::where('caregiver_id',$request->caregiver_id)->update(['stars' => $averageRating]);
+        Caregiver::find($request->caregiver_id)->update(['stars' => $averageRating]);
 
         return response()->json(['message' => 'Rating submitted successfully'], 201);
     }

@@ -52,6 +52,7 @@ Route::get('categories/{category_id}/services', [ServiceController::class, 'cate
 Route::get('categories/{category_id}/caregivers', [CategoriesController::class, 'category_Caregivers']); // Caregivers/{categoryId} must pass category id
 
 // Middleware group for routes requiring admin authentication
+Route::get('services', [ServiceController::class, 'index']); // Get all services
 Route::middleware('admin.auth')->group(function () {
     // Categories routes
     Route::get('categories/{id}', [CategoriesController::class, 'show']); // Show a category
@@ -60,7 +61,6 @@ Route::middleware('admin.auth')->group(function () {
     Route::delete('categories/{id}', [CategoriesController::class, 'destroy']); // Delete a category
 
     // Services routes
-    Route::get('services', [ServiceController::class, 'index']); // Get all services
     Route::post('services', [ServiceController::class, 'store']); // Store a new service
     Route::get('services/{id}', [ServiceController::class, 'show']); // Show a service
     Route::post('services/{id}', [ServiceController::class, 'update']); // Update a service
@@ -181,8 +181,13 @@ Route::get('/popular-caregivers', function () {
         ], 401);
     }
     $popular = Caregiver::where('center_id', auth()->user()->center_id)->where('stars', '>=', 4.5)->get();
-    $popular->makeHidden(["professional_card_image", "id_card_image","access_token"]);
+    $popular->makeHidden(["professional_card_image", "id_card_image", "access_token"]);
     return response()->json([
         'data' => $popular,
     ], 200);
+});
+
+
+Route::get("/test",function(){
+    return auth()->check();
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Caregiver;
 use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -94,8 +95,9 @@ class BookingController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
+
         try {
             // Ensure the current authenticated user is making the booking
             if (auth()->check()) {
@@ -115,7 +117,6 @@ class BookingController extends Controller
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date',
                 'phone_number' => 'required|string|digits:11',
-                'approval_status' => 'nullable|boolean',
             ]);
 
             // Set start_date to booking_date if not provided
@@ -150,7 +151,6 @@ class BookingController extends Controller
                 'end_date' => $endDate, // Set end date
                 'location' => $point,
                 'phone_number' => $validatedData['phone_number'],
-                'approval_status' => $approvalStatus,
             ]);
             $booking->save();
 
@@ -160,7 +160,7 @@ class BookingController extends Controller
                 'longitude' => $longitude,
             ];
 
-            return response()->json(['message' => 'Booking created successfully', 'booking' => $booking , 'location' => $location], 201);
+            return response()->json(['message' => 'Booking created successfully', 'booking' => $booking, 'location' => $location], 201);
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 400);
         } catch (\Exception $e) {
@@ -179,67 +179,67 @@ class BookingController extends Controller
         try {
             $booking = Booking::findOrFail($id);
 
-                // Retrieve user and caregiver names
-                $userName = $booking->user->name;
-                $caregiverName = $booking->caregiver->name;
+            // Retrieve user and caregiver names
+            $userName = $booking->user->name;
+            $caregiverName = $booking->caregiver->name;
 
-                // Retrieve services and calculate total price
-                $services = Service::whereIn('id', json_decode($booking->services))->get();
-                $totalPrice = $services->sum('price');
+            // Retrieve services and calculate total price
+            $services = Service::whereIn('id', json_decode($booking->services))->get();
+            $totalPrice = $services->sum('price');
 
-                // Retrieve location data
-                $locationData = DB::table('bookings')
-                    ->select(DB::raw('X(location) as latitude, Y(location) as longitude'))
-                    ->where('id', $id)
-                    ->first();
+            // Retrieve location data
+            $locationData = DB::table('bookings')
+                ->select(DB::raw('X(location) as latitude, Y(location) as longitude'))
+                ->where('id', $id)
+                ->first();
 
-                $location = [
-                    'latitude' => $locationData->latitude,
-                    'longitude' => $locationData->longitude
-                ];
+            $location = [
+                'latitude' => $locationData->latitude,
+                'longitude' => $locationData->longitude
+            ];
 
-                // Prepare response data
-                $data = [
-                    'user_name' => $userName,
-                    'caregiver_name' => $caregiverName,
-                    'services' => $services,
-                    'total_price' => $totalPrice,
-                    'location' => $location,
-                    'status' => $booking->approval_status, // Use the stored approval status directly
-                    'phone_number' => $booking->phone_number,
-                ];
+            // Prepare response data
+            $data = [
+                'user_name' => $userName,
+                'caregiver_name' => $caregiverName,
+                'services' => $services,
+                'total_price' => $totalPrice,
+                'location' => $location,
+                'status' => $booking->approval_status, // Use the stored approval status directly
+                'phone_number' => $booking->phone_number,
+            ];
 
-                return response()->json($data, 200);
-                // Retrieve user and caregiver names
-                $userName = $booking->user->name;
-                $caregiverName = $booking->caregiver->name;
+            return response()->json($data, 200);
+            // Retrieve user and caregiver names
+            $userName = $booking->user->name;
+            $caregiverName = $booking->caregiver->name;
 
-                // Retrieve services and calculate total price
-                $services = Service::whereIn('id', json_decode($booking->services))->get();
-                $totalPrice = $services->sum('price');
+            // Retrieve services and calculate total price
+            $services = Service::whereIn('id', json_decode($booking->services))->get();
+            $totalPrice = $services->sum('price');
 
-                // Retrieve location data
-                $locationData = DB::table('bookings')
-                    ->select(DB::raw('X(location) as latitude, Y(location) as longitude'))
-                    ->where('id', $id)
-                    ->first();
+            // Retrieve location data
+            $locationData = DB::table('bookings')
+                ->select(DB::raw('X(location) as latitude, Y(location) as longitude'))
+                ->where('id', $id)
+                ->first();
 
-                $location = [
-                    'latitude' => $locationData->latitude,
-                    'longitude' => $locationData->longitude
-                ];
+            $location = [
+                'latitude' => $locationData->latitude,
+                'longitude' => $locationData->longitude
+            ];
 
-                // Prepare response data
-                $data = [
-                    'user_name' => $userName,
-                    'caregiver_name' => $caregiverName,
-                    'services' => $services,
-                    'total_price' => $totalPrice,
-                    'location' => $location,
-                    'status' => $booking->approval_status, // Use the stored approval status directly
-                    'phone_number' => $booking->phone_number,
-                ];
-                return response()->json($data, 200);
+            // Prepare response data
+            $data = [
+                'user_name' => $userName,
+                'caregiver_name' => $caregiverName,
+                'services' => $services,
+                'total_price' => $totalPrice,
+                'location' => $location,
+                'status' => $booking->approval_status, // Use the stored approval status directly
+                'phone_number' => $booking->phone_number,
+            ];
+            return response()->json($data, 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Booking not found'], 404);
         } catch (\Exception $e) {
@@ -438,7 +438,7 @@ class BookingController extends Controller
      */
     public function bookingUser(): JsonResponse
     {
-        try {
+        // try {
             // Get the authenticated user
             $authenticatedUser = Auth::user();
 
@@ -450,12 +450,13 @@ class BookingController extends Controller
             foreach ($bookings as $booking) {
                 $userName = $booking->user->name;
                 $caregiverName = $booking->caregiver->name;
+                $caregiverAvatar = $booking->caregiver->profile_image;
 
                 if (!empty($booking->services)) {
                     // Decode service IDs and fetch corresponding services
                     $serviceIds = json_decode($booking->services, true);
                     $serviceIds = Arr::flatten($serviceIds);
-                    $services = Service::whereIn('id', $serviceIds)->get();
+                    $services = Service::whereIn('id', $serviceIds)->with('category')->get();
 
                     // Calculate total price of services
                     $totalPrice = $services->sum('price');
@@ -480,6 +481,8 @@ class BookingController extends Controller
                     'id' => $booking->id,
                     'user_name' => $userName,
                     'caregiver_name' => $caregiverName,
+                    'caregiver_profile_image' => $caregiverAvatar,
+                    'start_date' => $booking->start_date,
                     'services' => $services,
                     'total_price' => $totalPrice,
                     'location' => $location,
@@ -492,10 +495,10 @@ class BookingController extends Controller
 
             // Return formatted bookings as JSON response
             return response()->json(['bookings' => $formattedBookings], 200);
-        } catch (\Exception $e) {
-            // Handle exceptions
-            return response()->json(['error' => 'An error occurred while processing the request.'], 500);
-        }
+        // } catch (\Exception $e) {
+        //     // Handle exceptions
+        //     return response()->json(['error' => 'An error occurred while processing the request.'], 500);
+        // }
     }
     /**
      * Retrieve bookings associated with a specific caregiver.
@@ -562,7 +565,7 @@ class BookingController extends Controller
         }
     }
 
-        /**
+    /**
      * Approve or reject a booking by the caregiver.
      * Only the caregiver can approve or reject bookings associated with them.
      */
@@ -608,7 +611,4 @@ class BookingController extends Controller
         }
         return $encodedBooking;
     }
-
-
-
 }

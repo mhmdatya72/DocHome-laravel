@@ -29,11 +29,7 @@ class BookingDetailController extends Controller
                 ->distinct('caregiver_id')
                 ->count('caregiver_id');
             // Count bookings for the authenticated user
-            $bookingsCount = DB::table('bookings')
-                ->where('user_id', $userId)
-                ->select('user_id', DB::raw('count(*) as total_bookings'))
-                ->groupBy('user_id')
-                ->first(); // Use first() to get a single result
+            $bookingsCount = Booking::where('user_id', $userId)->count();
 
             // Count number of reviews that authenticated user make it
             $reviewsCount = Rating::where('user_id', $userId)->count();
