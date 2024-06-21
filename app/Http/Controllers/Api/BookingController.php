@@ -165,8 +165,12 @@ class BookingController extends Controller
               //user notifications for Making booking
             $user = User::where('id',$user_id)->first();
             $user_id = auth()->user()->id;
-            $caregiver =Caregiver::where('id',$validatedData['caregiver_id'])->first();
+            $caregiver =Caregiver::select('name')->where('id',$validatedData['caregiver_id']);
             $message = 'Booking created successfully with '.$caregiver;
+            DB::table('notifications')->insert([
+                'Owner'=>'p',
+                'Owner_id'=>$user_id
+           ]);
             Notification::send($user,MakeBookingNotification($user_id, $message));
 
             return response()->json(['message' => 'Booking created successfully', 'booking' => $booking, 'location' => $location], 201);

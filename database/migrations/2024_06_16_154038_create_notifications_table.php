@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('type');
             $table->morphs('notifiable');
             $table->text('data');
+            $table->string('Owner',1);
+            $table->string('Owner_id');
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });

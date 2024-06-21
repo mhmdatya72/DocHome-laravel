@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class CaregiverController extends Controller
 {
@@ -117,6 +118,17 @@ class CaregiverController extends Controller
             ['professional_card_image' => $professional_card_image_path],
             ['id_card_image' => $id_card_image_path],
         ));
+
+                //caregiver notifications for registering
+
+
+                $caregiver_id = auth()->caregiver()->id;
+                $message = 'welcome to our homecare services';
+                DB::table('notifications')->insert([
+                    'Owner'=>'c',
+                    'Owner_id'=> $caregiver_id
+               ]);
+                Notification::send($user,NewUseNotification($caregiver_id, $message));
 
 
         return response()->json([
