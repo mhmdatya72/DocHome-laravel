@@ -69,20 +69,18 @@ class BookingDetailController extends Controller
             // Count bookings for the authenticated caregiver
             $bookingsCount = DB::table('bookings')
                 ->where('caregiver_id', $caregiverId)
-                ->select('caregiver_id', DB::raw('count(*) as total_bookings'))
-                ->groupBy('caregiver_id')
-                ->first(); // Use first() to get a single result
+                ->count(); // Use first() to get a single result
 
             // Count distinct user_id for the authenticated caregiver
             $userCount = Booking::where('caregiver_id', $caregiverId)
                 ->distinct('user_id')
                 ->count('user_id');
-
+            $reviews = Rating::where('caregiver_id',$caregiverId)->count();
             // Return the result as a JSON response
             return response()->json([
-                'caregiver_id' => $caregiverId,
                 'total_bookings' => !$bookingsCount ? 0 : $bookingsCount,
-                'user_count' => $userCount,
+                'users_count' => $userCount,
+                'reviews_count' => $reviews
             ], 200);
         } catch (Exception $e) {
             // Handle any errors that may occur

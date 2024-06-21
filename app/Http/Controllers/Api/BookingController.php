@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Caregiver;
 use App\Models\Service;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +19,7 @@ use Illuminate\Validation\ValidationException;
 
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\MakeBookingNotification;
+use Illuminate\Support\Facades\Hash;
 
 class BookingController extends Controller
 {
@@ -133,6 +135,18 @@ class BookingController extends Controller
             // Calculate total price of services
             $totalPrice = Service::whereIn('id', $validatedData['services'])->sum('price');
 
+            //? wallet transactions
+
+            try {
+                $user = auth()->user();
+                if (!Hash::check($request->password, $user->password)) {
+                    return response()->json(['errorEn' => 'Incorrect password', 'errorAr' => 'كلمة المرور خاطئة '], 401);
+                }
+                $user->wallet->decreaseBalance($totalPrice);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 400);
+            }
+            //?
             // Store location as POINT in the database
             $latitude = $validatedData['location']['latitude'];
             $longitude = $validatedData['location']['longitude'];
@@ -162,16 +176,28 @@ class BookingController extends Controller
                 'latitude' => $latitude,
                 'longitude' => $longitude,
             ];
-              //user notifications for Making booking
-            $user = User::where('id',$user_id)->first();
+            //user notifications for Making booking
             $user_id = auth()->user()->id;
-            $caregiver =Caregiver::select('name')->where('id',$validatedData['caregiver_id']);
-            $message = 'Booking created successfully with '.$caregiver;
+            $user = User::where('id', $user_id)->first();
+            $caregiver = Caregiver::firstWhere('id', $validatedData['caregiver_id'])->name;
+
             DB::table('notifications')->insert([
-                'Owner'=>'p',
-                'Owner_id'=>$user_id
-           ]);
-            Notification::send($user,MakeBookingNotification($user_id, $message));
+                'Owner' => 'p',
+                'Owner_id' => $user_id,
+                "data" => json_encode([
+                    'msg_en' => 'Booking created successfully with ' . $caregiver,
+                    'msg_ar' => " تم ارسال طلب حجز بنجاح الي" . $caregiver
+                ])
+            ]);
+            DB::table('notifications')->insert([
+                'Owner' => 'c',
+                'Owner_id' => $validatedData['caregiver_id'],
+                "data" => json_encode([
+                    'msg_en' => 'New Booking from ' . auth()->user()->name,
+                    'msg_ar' => " هناك طلب موعد جديد من" .  auth()->user()->name
+                ])
+            ]);
+            // Notification::send($user,MakeBookingNotification($user_id, $messageEn));
 
             return response()->json(['message' => 'Booking created successfully', 'booking' => $booking, 'location' => $location], 201);
         } catch (ValidationException $e) {
@@ -452,62 +478,62 @@ class BookingController extends Controller
     public function bookingUser(): JsonResponse
     {
         // try {
-            // Get the authenticated user
-            $authenticatedUser = Auth::user();
+        // Get the authenticated user
+        $authenticatedUser = Auth::user();
 
-            // Retrieve all bookings associated with the authenticated user
-            $bookings = Booking::where('user_id', $authenticatedUser->id)->get();
+        // Retrieve all bookings associated with the authenticated user
+        $bookings = Booking::where('user_id', $authenticatedUser->id)->get();
 
-            $formattedBookings = [];
+        $formattedBookings = [];
 
-            foreach ($bookings as $booking) {
-                $userName = $booking->user->name;
-                $caregiverName = $booking->caregiver->name;
-                $caregiverAvatar = $booking->caregiver->profile_image;
+        foreach ($bookings as $booking) {
+            $userName = $booking->user->name;
+            $caregiverName = $booking->caregiver->name;
+            $caregiverAvatar = $booking->caregiver->profile_image;
 
-                if (!empty($booking->services)) {
-                    // Decode service IDs and fetch corresponding services
-                    $serviceIds = json_decode($booking->services, true);
-                    $serviceIds = Arr::flatten($serviceIds);
-                    $services = Service::whereIn('id', $serviceIds)->with('category')->get();
+            if (!empty($booking->services)) {
+                // Decode service IDs and fetch corresponding services
+                $serviceIds = json_decode($booking->services, true);
+                $serviceIds = Arr::flatten($serviceIds);
+                $services = Service::whereIn('id', $serviceIds)->with('category')->get();
 
-                    // Calculate total price of services
-                    $totalPrice = $services->sum('price');
-                } else {
-                    // Return appropriate message if no services selected
-                    return response()->json(['message' => 'No services selected for booking with ID: ' . $booking->id], 404);
-                }
-
-                // Retrieve location data
-                $locationData = DB::table('bookings')
-                    ->select(DB::raw('X(location) as latitude, Y(location) as longitude'))
-                    ->where('id', $booking->id)
-                    ->first();
-
-                $location = [
-                    'latitude' => $locationData->latitude,
-                    'longitude' => $locationData->longitude
-                ];
-
-                // Prepare formatted booking data
-                $formattedBooking = [
-                    'id' => $booking->id,
-                    'user_name' => $userName,
-                    'caregiver_name' => $caregiverName,
-                    'caregiver_profile_image' => $caregiverAvatar,
-                    'start_date' => $booking->start_date,
-                    'services' => $services,
-                    'total_price' => $totalPrice,
-                    'location' => $location,
-                    'status' => $booking->approval_status, // Use the stored approval status directly
-                    'phone_number' => $booking->phone_number,
-                ];
-
-                $formattedBookings[] = $formattedBooking;
+                // Calculate total price of services
+                $totalPrice = $services->sum('price');
+            } else {
+                // Return appropriate message if no services selected
+                return response()->json(['message' => 'No services selected for booking with ID: ' . $booking->id], 404);
             }
 
-            // Return formatted bookings as JSON response
-            return response()->json(['bookings' => $formattedBookings], 200);
+            // Retrieve location data
+            $locationData = DB::table('bookings')
+                ->select(DB::raw('X(location) as latitude, Y(location) as longitude'))
+                ->where('id', $booking->id)
+                ->first();
+
+            $location = [
+                'latitude' => $locationData->latitude,
+                'longitude' => $locationData->longitude
+            ];
+
+            // Prepare formatted booking data
+            $formattedBooking = [
+                'id' => $booking->id,
+                'user_name' => $userName,
+                'caregiver_name' => $caregiverName,
+                'caregiver_profile_image' => $caregiverAvatar,
+                'start_date' => $booking->start_date,
+                'services' => $services,
+                'total_price' => $totalPrice,
+                'location' => $location,
+                'status' => $booking->approval_status, // Use the stored approval status directly
+                'phone_number' => $booking->phone_number,
+            ];
+
+            $formattedBookings[] = $formattedBooking;
+        }
+
+        // Return formatted bookings as JSON response
+        return response()->json(['bookings' => $formattedBookings], 200);
         // } catch (\Exception $e) {
         //     // Handle exceptions
         //     return response()->json(['error' => 'An error occurred while processing the request.'], 500);
@@ -516,21 +542,24 @@ class BookingController extends Controller
     /**
      * Retrieve bookings associated with a specific caregiver.
      */
-    public function bookingCaregiver(): JsonResponse
+    public function bookingCaregiver()
     {
         try {
+            if (!auth()->guard('caregiver')->check()) {
+                return response()->json([
+                    "message"  => "you are not authorized"
+                ], 401);
+            }
             // Get the authenticated caregiver
             $authenticatedCaregiver = Auth::guard('caregiver')->user();
 
             // Retrieve all bookings associated with the authenticated caregiver
             $bookings = Booking::where('caregiver_id', $authenticatedCaregiver->id)->get();
-
             $formattedBookings = [];
 
             foreach ($bookings as $booking) {
                 $userName = $booking->user->name;
                 $caregiverName = $booking->caregiver->name;
-
                 if (!empty($booking->services)) {
                     // Decode service IDs and fetch corresponding services
                     $serviceIds = json_decode($booking->services, true);
@@ -558,13 +587,17 @@ class BookingController extends Controller
                 // Prepare formatted booking data
                 $formattedBooking = [
                     'id' => $booking->id,
+                    'start_date' => $booking->start_date,
                     'user_name' => $userName,
+                    'user_profile_image' => User::find($booking->user_id)->profile_image,
+                    'center' => User::find($booking->user_id)->center,
                     'caregiver_name' => $caregiverName,
                     'services' => $services,
                     'total_price' => $totalPrice,
                     'location' => $location,
                     'status' => $booking->approval_status, // Use the stored approval status directly
                     'phone_number' => $booking->phone_number,
+                    "finished" => $booking->finished
                 ];
 
                 $formattedBookings[] = $formattedBooking;
@@ -578,6 +611,7 @@ class BookingController extends Controller
         }
     }
 
+
     /**
      * Approve or reject a booking by the caregiver.
      * Only the caregiver can approve or reject bookings associated with them.
@@ -588,10 +622,29 @@ class BookingController extends Controller
 
             // Validate request data
             $validatedData = $request->validate([
-                'approval_status' => 'required|boolean',
+                'approval_status' => 'required',
             ]);
             // Find the booking to be updated
             $booking = Booking::findOrFail($id);
+
+            //? wallet transactions
+            if ($validatedData['approval_status'] == 0) {
+                try {
+                    $user = User::find($booking->user_id);
+                    $user->wallet->increaseBalance($booking->total_price);
+                    DB::table('notifications')->insert([
+                        'Owner' => 'p',
+                        'Owner_id' => $user->id,
+                        "data" => json_encode([
+                            'msg_en' => 'Your booking request was canceled with ' . Caregiver::find($booking->caregiver_id)->name . "and we send the money back to your wallet",
+                            'msg_ar' => " تم الغاء حجزك مع الدكتور" . Caregiver::find($booking->caregiver_id)->name . "وتم استرجعاع ثمن الحجز اللي محفظتك بنجاح"
+                        ])
+                    ]);
+                } catch (\Exception $e) {
+                    return response()->json(['error' => $e->getMessage()], 400);
+                }
+            }
+            //?
             // Update the approval status
             $booking->approval_status = $validatedData['approval_status'];
             $booking->save();

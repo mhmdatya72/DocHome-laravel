@@ -23,8 +23,9 @@ return new class extends Migration
             $table->timestamp('booking_date')->nullable();
             $table->timestamp('start_date')->nullable();
             $table->timestamp('end_date')->nullable();
-            $table->boolean('approval_status')->default(0);
+            
             $table->string('phone_number', 11)->nullable();
+            
             $table->timestamps();
         });
     }

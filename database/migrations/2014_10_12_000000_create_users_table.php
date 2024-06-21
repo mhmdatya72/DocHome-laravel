@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreign('center_id')->references('id')->on('centers');
             $table->timestamp('email_verified_at')->nullable();
             $table->text('access_token')->nullable();
+            $table->decimal('salary', 15, 2)->default(0);
             $table->timestamps();
         });
     }

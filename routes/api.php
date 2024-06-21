@@ -109,8 +109,6 @@ Route::get('bookingscaregiver', [BookingController::class, 'bookingCaregiver']);
 Route::post('bookings/{id}/approve-or-reject', [BookingController::class, 'approveOrReject']); // Approve or reject a booking
 
 
-
-
 // ====================== BookingDetail api ======================================
 // Route to get the total count of bookings for the authenticated user
 Route::get('user-profile-statistics', [BookingDetailController::class, 'getUserProfileStatistics']);
@@ -136,8 +134,8 @@ Route::apiResource('user', UserController::class)->only(['index']);
 
 //===========================NOTIFICATION ROUTE=========================
 Route::post('send-notification', [NotificationController::class, 'sendNotification']);
-Route::post('userNotifi', [NotificationController::class, 'userNotifi']);
-Route::post('caregiverNotifi', [NotificationController::class, 'caregiverNotifi']);
+Route::get('user-notifications', [NotificationController::class, 'userNotifications']);
+Route::get('caregiver-notifications', [NotificationController::class, 'caregiverNotifications']);
 
 
 
@@ -160,6 +158,7 @@ Route::group(['middleware' => 'caregiver.auth'], function () {
 Route::middleware('auth:api')->group(function () {
     Route::post('user-profile-update', [UserController::class, 'update']);
 });
+Route::get('/my-wallet', [UserController::class, 'myWallet']);
 
 
 // rating routes
@@ -174,7 +173,7 @@ Route::get('statistics', [CaregiverController::class, 'statistics']);
 
 //============================ payment =================================
 Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
-
+Route::get('/wallet-charging-order', [PaymentController::class, 'walletChargingOrder']);
 
 // get popular caregivers in your center
 Route::get('/popular-caregivers', function () {
@@ -191,6 +190,4 @@ Route::get('/popular-caregivers', function () {
 });
 
 
-Route::get("/test",function(){
-    return auth()->check();
-});
+

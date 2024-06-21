@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Center;
 use App\Models\Image;
 use App\Models\User;
+use App\Models\Wallet;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -97,14 +98,20 @@ class UserController extends Controller
 
         //user notifications for registering
 
-        $user = User::where('id',$user_id)->first();
+        $user = User::where('id', $user_id)->first();
         $user_id = auth()->user()->id;
-        $message = 'welcome to our homecare services';
+        $messageEn = 'welcome to our homecare services';
+        $messageAr = 'مرحبا بك في هوم كير';
+
         DB::table('notifications')->insert([
-            'Owner'=>'p',
-            'Owner_id'=>$user_id
-       ]);
-        Notification::send($user,NewUseNotification($user_id, $message));
+            'Owner' => 'p',
+            'Owner_id' => $user_id,
+            'data' => json_encode([
+                'msg_ar' => $messageAr,
+                'msg_en' => $messageEn,
+            ])
+        ]);
+        // Notification::send($user, NewUseNotification($user_id, $message));
 
 
 
@@ -210,7 +217,7 @@ class UserController extends Controller
 
             // Use  dynamic unique id as the image file name
             $name = Str::uuid() . '.' . $file->getClientOriginalExtension(); // store image with
-            $profile_image_path = $file->storeAs('images/users/profile_images', $name , 'public');
+            $profile_image_path = $file->storeAs('images/users/profile_images', $name, 'public');
 
             // Insert new image in image table
             $image = new Image();
@@ -229,6 +236,13 @@ class UserController extends Controller
         return response()->json([
             'message' => 'User successfully updated',
             'user' => $user
+        ], 200);
+    }
+    public function myWallet(Request $request)
+    {
+        $wallet = Wallet::firstWhere("user_id", auth()->user()->id);
+        return response()->json([
+            'balance' => $wallet->balance ?? 0
         ], 200);
     }
 }

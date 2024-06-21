@@ -14,21 +14,35 @@ class ChatController extends Controller
     // get all chats
     public function index(GetChatRequest $request): JsonResponse
     {
-        if (!auth()->check()) { // not patient or caregiver
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
         $data = $request->validated();
         $is_private = 1;
         if ($request->has('is_private')) {
             $isPrivate = (int)$data['is_private'];
         }
-        $id = auth()->guard('api')->user()->id ?? auth()->guard('caregiver')->user()->id;
-        $chats = Chat::where('is_private', $is_private)
-            ->hasParticipant($id)
-            // ->whereHas('messages')
-            ->with('lastMessage.user', 'participants.user', 'participants.caregiver')
-            ->latest('updated_at')
-            ->get();
+        if (isset(auth()->guard('api')->user()->id)) { // patient send the message
+            $id = auth()->guard('api')->user()->id;
+            $chats = Chat::where('is_private', $is_private)
+                ->whereHas('participants', function ($q) use ($id) {
+                    $q->where('user_id', $id);
+                })
+                // ->whereHas('messages')
+                ->with('lastMessage.user', 'participants.user', 'participants.caregiver')
+                ->latest('updated_at')
+                ->get();
+        } else if (isset(auth()->guard('caregiver')->user()->id)) { // caregiver send the message
+            $id = auth()->guard('caregiver')->user()->id;
+            $chats = Chat::where('is_private', $is_private)->whereHas('participants', function ($q) use ($id) {
+                    $q->where('caregiver_id', $id);
+                })
+                // ->whereHas('messages')
+                ->with('lastMessage.user', 'participants.user', 'participants.caregiver')
+                ->latest('updated_at')
+                ->get();
+        } else {
+            return response()->json([
+                "message" => "un authorized",
+            ], 401);
+        }
         return response()->json([
             'data' => $chats,
             'status' => 200,

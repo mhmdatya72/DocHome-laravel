@@ -110,6 +110,11 @@ class Caregiver extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(rating::class);
     }
+    public function increaseSalary(float $amount)
+    {
+        $this->salary += $amount;
+        $this->save();
+    }
 }
 
 

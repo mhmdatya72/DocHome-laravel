@@ -122,5 +122,10 @@ class User extends Authenticatable implements JWTSubject
     public function sendNewMessageNotification(array $data) : void {
         $this->notify(new MessageSent($data));
     }
+    
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
 
 }

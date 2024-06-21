@@ -31,6 +31,7 @@ class Booking extends Model
         'start_date', 'end_date',
         'approval_status',
         'phone_number',
+        'finished'
     ];
 
     public function user(): BelongsTo

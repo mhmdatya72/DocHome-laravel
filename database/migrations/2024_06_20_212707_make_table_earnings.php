@@ -11,14 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('notifications', function (Blueprint $table) {
+        Schema::create('earnings', function (Blueprint $table) {
             $table->id();
-            $table->string('type')->nullable();
-            $table->morphs('notifiable');
-            $table->text('data');
-            $table->string('Owner',1);
-            $table->integer('Owner_id');
-            $table->timestamp('read_at')->nullable();
+            $table->decimal('earning', 15, 2)->default(0);
+            $table->foreignId('caregiver_id')->references('id')->on('caregivers')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -28,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notifications');
+        //
     }
 };

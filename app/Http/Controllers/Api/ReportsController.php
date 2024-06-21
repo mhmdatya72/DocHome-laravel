@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use App\Models\Caregiver;
+use App\Models\Earning;
 use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -54,13 +57,25 @@ class ReportsController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-
+        $caregiverId = auth()->guard('caregiver')->user()->id;
         $report = Report::create(array_merge(
             $validator->validated(),
             ['date' => date('Y-m-d')],
             ['caregiver_id' => auth()->guard('caregiver')->user()->id],
         ));
 
+        $booking = Booking::find($request->booking_id);
+        // mark booking as done
+        $booking->update([
+            "finished" => true
+        ]);
+
+        Caregiver::find($caregiverId)->increaseSalary($booking->total_price * .75);
+
+        Earning::create([
+            "caregiver_id" => $caregiverId,
+            "earning" => $booking->total_price * .25
+        ]);
 
         return response()->json([
             'message' => 'Report successfully created',

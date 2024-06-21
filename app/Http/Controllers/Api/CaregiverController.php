@@ -18,6 +18,9 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
+use function PHPUnit\Framework\isEmpty;
+use function PHPUnit\Framework\isNull;
+
 class CaregiverController extends Controller
 {
     public function __construct()
@@ -121,14 +124,17 @@ class CaregiverController extends Controller
 
                 //caregiver notifications for registering
 
-
-                $caregiver_id = auth()->caregiver()->id;
-                $message = 'welcome to our homecare services';
+                $messageEn= 'welcome to dochome for home care services';
+                $messageAr = 'مرحبا بك في هوم كير';
                 DB::table('notifications')->insert([
                     'Owner'=>'c',
-                    'Owner_id'=> $caregiver_id
+                    'Owner_id'=> $caregiver->id,
+                    'data' => json_encode([
+                        'msg_ar' => $messageAr,
+                        'msg_en' => $messageEn,
+                    ])
                ]);
-                Notification::send($user,NewUseNotification($caregiver_id, $message));
+                // Notification::send($user,NewUseNotification($caregiver_id, $message));
 
 
         return response()->json([
@@ -227,7 +233,8 @@ class CaregiverController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|between:2,100',
             'email' => "sometimes|required|string|email|max:100|unique:caregivers,email,{$caregiver->id}",
-            'password' => 'sometimes|nullable|string|confirmed|min:6',
+            'password' => 'sometimes|nullable|string|min:6',
+            'about' => 'sometimes|nullable|string',
             'phone' => "sometimes|required|min:11|max:11|unique:caregivers,phone,{$caregiver->id}",
             'profile_image' => 'nullable|mimes:jpeg,gif,png|max:2048',
             'center_id' => "sometimes|required|exists:{$centerModel},id",
@@ -260,7 +267,6 @@ class CaregiverController extends Controller
 
             $updateData['profile_image'] = $profile_image_path;
         }
-
         // Check if password is provided and hash it
         if ($request->password) {
             $updateData['password'] = bcrypt($request->password);

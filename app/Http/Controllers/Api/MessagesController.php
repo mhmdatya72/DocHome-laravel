@@ -9,6 +9,7 @@ use App\Http\Requests\StoreMessageRequest;
 use App\Models\Caregiver;
 use App\Models\Chat;
 use App\Models\Message;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -42,7 +43,6 @@ class MessagesController extends Controller
     public function store(StoreMessageRequest $request)
     {
         if (!auth()->check()) { // not patient or caregiver
-            return response()->json(['message' => 'Unauthorized'], 401);
         }
         $data = $request->validated();
         // TODO -> possible solution added by "Ahmed"
@@ -50,14 +50,14 @@ class MessagesController extends Controller
         if (isset(auth()->guard('api')->user()->id)) { // patient send the message
             $data['user_id'] = auth()->guard('api')->user()->id;
             $data['caregiver_id'] = $request->receiver_id;
-        } else { // caregiver send the message
+        } else if (isset(auth()->guard('caregiver')->user()->id)) { // caregiver send the message
             $data['caregiver_id'] = auth()->guard('caregiver')->user()->id;
             $data['user_id'] = $request->receiver_id;
+        } else {
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
 
         unset($data["receiver_id"]);
-
-        $data['user_id'] = auth()->guard('api')->user()->id;
         $data['time'] = date('h:i A');
         if ($file = $request->file('file')) {
             $name = $file->getClientOriginalName();
@@ -82,25 +82,45 @@ class MessagesController extends Controller
 
         broadcast(new NewMessageSent($chatMessage))->toOthers();
 
-        $user = auth()->user();
-        $userId = $user->id;
+        $user = "";
+        if (isset(auth()->guard('api')->user()->id)) {
+            $user = auth()->guard('api')->user();
+            $chat = Chat::where('id', $chatMessage->chat_id)
+                ->with(['participants' => function ($query) use ($user) {
+                    $query->where('user_id', '!=', $user->id);
+                }])
+                ->first();
+            if (count($chat->participants) > 0) {
+                $caregiverId = $chat->participants[0]->caregiver_id;
 
-        $chat = Chat::where('id', $chatMessage->chat_id)
-            ->with(['participants' => function ($query) use ($userId) {
-                $query->where('user_id', '!=', $userId);
-            }])
-            ->first();
-        if (count($chat->participants) > 0) {
-            $caregiverId = $chat->participants[0]->caregiver_id;
+                $caregiver = Caregiver::where('id', $caregiverId)->first();
+                $caregiver->sendNewMessageNotification([
+                    'messageData' => [
+                        'senderName' => $user->username,
+                        'message' => $chatMessage->message,
+                        'chatId' => $chatMessage->chat_id
+                    ]
+                ]);
+            }
+        } else if (isset(auth()->guard('caregiver')->user()->id)) {
+            $user = auth()->guard('caregiver')->user();
+            $chat = Chat::where('id', $chatMessage->chat_id)
+                ->with(['participants' => function ($query) use ($user) {
+                    $query->where('caregiver_id', '!=', $user->id);
+                }])
+                ->first();
+            if (count($chat->participants) > 0) {
+                $user_id = $chat->participants[0]->user_id;
 
-            $caregiver = Caregiver::where('id', $caregiverId)->first();
-            $caregiver->sendNewMessageNotification([
-                'messageData' => [
-                    'senderName' => $user->username,
-                    'message' => $chatMessage->message,
-                    'chatId' => $chatMessage->chat_id
-                ]
-            ]);
+                $user = User::where('id', $user_id)->first();
+                $user->sendNewMessageNotification([
+                    'messageData' => [
+                        'senderName' => $user->username,
+                        'message' => $chatMessage->message,
+                        'chatId' => $chatMessage->chat_id
+                    ]
+                ]);
+            }
         }
     }
 }
