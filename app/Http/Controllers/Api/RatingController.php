@@ -27,6 +27,8 @@ class RatingController extends Controller
             $rating->rating = $request->rating;
             $rating->comments = $request->comments;
             $rating->save();
+            $averageRating = Rating::where('caregiver_id', $request->caregiver_id)->avg('rating');
+            Caregiver::find($request->caregiver_id)->update(['stars' => $averageRating]);
         } else {
             Rating::create([
                 'caregiver_id' => $request->caregiver_id,
@@ -34,11 +36,12 @@ class RatingController extends Controller
                 'rating' => $request->rating,
                 'comments' => $request->comments,
             ]);
+            $averageRating = Rating::where('caregiver_id', $request->caregiver_id)->avg('rating');
+            $numberOfRatings = Rating::where('caregiver_id', $request->caregiver_id)->count();
+            Caregiver::find($request->caregiver_id)->update(['stars' => $averageRating, "number_of_reviews" => $numberOfRatings]);
         }
 
-        $averageRating = Rating::where('caregiver_id', $request->caregiver_id)->avg('rating');
-        $numberOfRatings = Rating::where('caregiver_id', $request->caregiver_id);
-        Caregiver::find($request->caregiver_id)->update(['stars' => $averageRating]);
+
 
         return response()->json(['message' => 'Rating submitted successfully'], 201);
     }

@@ -71,10 +71,12 @@ class ResetPasswordController extends Controller
                     'message' => "otp is correct",
                 ], 200);
             }
-            return response()->json([
-                'message' => "otp is not correct",
+            return response()->json(
+                [
+                    'message' => "otp is not correct",
+                ],
                 400
-            ]);
+            );
         } catch (Exception $e) {
             return response()->json(
                 data: [
@@ -93,7 +95,11 @@ class ResetPasswordController extends Controller
                 'new_password' => "required:min:6",
             ]);
             $email = $data["email"];
-            $newPassword = bcrypt($data["new_password"]);
+            // return response()->json([
+            //     "message" => $data['new_password']
+            // ]);
+            // $newPassword = bcrypt($data["new_password"]);
+            $newPassword = $data["new_password"];
 
             if ($user = User::firstWhere("email", $email)) {
                 // update the password

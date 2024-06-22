@@ -75,7 +75,7 @@ class UserController extends Controller
             return response()->json($validator->errors()->toJson(), 422);
         }
 
-        $profile_image_path = null;
+        $profile_image_path = 'images/default_avatar.png';
 
         // Upload image in public disk if exists
         if ($file = $request->file('profile_image')) {
@@ -95,21 +95,22 @@ class UserController extends Controller
             ['password' => Hash::make($request->password)],
             ['profile_image' => $profile_image_path]
         ));
-
         //user notifications for registering
 
-        $user = User::where('id', $user_id)->first();
-        $user_id = auth()->user()->id;
         $messageEn = 'welcome to our homecare services';
         $messageAr = 'مرحبا بك في هوم كير';
 
         DB::table('notifications')->insert([
             'Owner' => 'p',
-            'Owner_id' => $user_id,
+            'Owner_id' => $user->id,
             'data' => json_encode([
                 'msg_ar' => $messageAr,
                 'msg_en' => $messageEn,
             ])
+        ]);
+        Wallet::create([
+            'user_id' => $user->id,
+            'balance' => 0,
         ]);
         // Notification::send($user, NewUseNotification($user_id, $message));
 

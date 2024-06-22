@@ -8,11 +8,6 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    protected $listen = [
-        Registered::class => [
-            CreateWalletForNewUser::class,
-        ],
-    ];
     /**
      * Register any application services.
      */
